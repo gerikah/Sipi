@@ -8,6 +8,8 @@ The companion architecture document defines page copy, data rules and developmen
 
 ## Content and source note
 
+Phase 1 implementation note: while coverage is unverified, the live source note ends with “based on the department compendium. Coverage years are pending verification.” The bracketed years below remain specification markers only. Approved image regions stay empty until assets are supplied. gerikah requested local development; hosting and database configuration are deferred.
+
 Use this exact note on Home and About:
 
 > Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the department compendium from [start year] to [end year].
@@ -132,12 +134,14 @@ Avoid fixed panel heights that clip long content. Inputs and buttons may grow wi
 
 ## Layout and page content
 
+Navigation and footer revision, 22 October 2026: shared navigation stays at the top while scrolling. Use a subtle theme-colored translucent background with 16px backdrop blur and a solid fallback, as requested by gerikah. Keep text opaque and readable. Anchor offsets follow the actual header height, including wrapped mobile navigation. Use a simple footer with the Sipi mark, department/campus text and links to records, About and the top of Home.
+
 Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `RecordForm` and `ThemeToggle` components. Reuse the same widths, field appearance and navigation order across pages. Do not add a left sidebar to the administrator workspace.
 
 ### 1 Home
 
 - Preserve the top horizontal navigation, large centered Sipi logo, centered search, lower left text and note, and lower right image.
-- Navigation: Home, About and Admin Login; theme toggle in the same header.
+- Navigation: Home, About and Records; theme toggle in the same header. Records opens `/records`. About scrolls to `/#about`, below the Home content. Admin Login stays available by its direct URL only.
 - Search label: Search thesis records. Placeholder: Search by title, author, or keyword.
 - Heading: Thesis records, easier to find.
 - Description: Browse thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila.
@@ -164,6 +168,8 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 - Do not add PDF previews, cover images or download controls to fill blank shapes.
 
 ### 4 About
+
+- Place this layout below Home on the same page, with the anchor `#about`. Keep `/about` as a redirect to `/#about`, not a separate page. This follows gerikah's 22 October 2026 revision.
 
 - Preserve centered brand, three image columns and text below them.
 - Heading: About Sipi.

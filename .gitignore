@@ -1,31 +1,23 @@
-/vendor/
 node_modules/
-npm-debug.log
-yarn-error.log
-
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
-
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
-
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
-
-storage/*.key
+dist/
 .env
-Homestead.yaml
-Homestead.json
-/.vagrant
-.phpunit.result.cache
-/.phpunit.cache
-
-/public/build
-/storage/pail
-.env.backup
-.env.production
-.phpactor.json
-auth.json
+.env.*
+!.env.example
+*.local
+*.log
+*.tsbuildinfo
+.netlify/
+coverage/
+test-results/
+playwright-report/
+.taste-skill/
+.local/
+.codex/
+.agents/
+# Compendium source files must stay outside Git and the frontend bundle.
+*.csv
+*.tsv
+*.xlsx
+*.xls
+.DS_Store
+Thumbs.db

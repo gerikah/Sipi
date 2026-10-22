@@ -11,13 +11,17 @@ Use this file for interface copy and field placement. Follow `design.md` for app
 
 ## Required source note
 
+Phase 1 live copy uses the department wording below and replaces the unverified year clause with: “based on the department compendium. Coverage years are pending verification.” Do not display the bracketed years in the running app. Contact notes stay omitted until a real approved contact is available.
+
 Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the department compendium from [start year] to [end year].
 
 Place this note on Home and About. Keep coverage years pending until the CSV is checked; source coverage is separate from thesis completion dates.
 
 ## Shared navigation
 
-Public navigation: Home | About | Admin Login, with a theme toggle.
+The shared header stays visible while scrolling. The simple footer shows the Sipi logo, “Computer Engineering”, “PUP Main Campus, Sta. Mesa, Manila”, and links labeled Browse records, About Sipi and Back to top.
+
+Public navigation: Home | About | Records, with a theme toggle. Home opens `/`, About scrolls to `/#about` below Home, and Records opens `/records`. Admin Login remains available at `/admin/login` but is not shown in public navigation.
 
 Administrator navigation: Sipi Admin | Records | Add record | Import CSV | Help, with a theme toggle and account menu containing Log out. Import and Help open dialogs.
 
@@ -29,7 +33,7 @@ The following sections map content to the supplied wireframes. Square brackets n
 
 | Wireframe area | Content to add |
 | --- | --- |
-| Top navigation | Home  /  About  /  Admin Login. Add a compact theme toggle in the same header. |
+| Top navigation | Home  /  About  /  Records. Add a compact theme toggle in the same header. |
 | Centered brand | Sipi logo as supplied. Accessible image label: Sipi home. |
 | Centered search | Label: Search thesis records. Placeholder: Search by title, author, or keyword. Enter submits to /records. |
 | Lower left heading | Thesis records, easier to find. |
@@ -39,7 +43,9 @@ The following sections map content to the supplied wireframes. Square brackets n
 
 Before the compendium is loaded, searching opens a real empty state: “No thesis records are available yet.” Do not show invented totals, recent theses or coverage dates.
 
-### About page
+### About section below Home
+
+Home and About share one scrolling page. The About navigation link targets `/#about`. Existing `/about` links redirect to that section. This supersedes the earlier separate-page arrangement, following gerikah's 22 October 2026 revision.
 
 | Wireframe area | Content to add |
 | --- | --- |

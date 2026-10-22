@@ -34,10 +34,12 @@ This supersedes the earlier Laravel, Inertia, MySQL and XAMPP proposal. Do not r
 | Home | `/` | Centered logo and search; lower description, source note and approved image area |
 | Search Results | `/records` | Search toolbar, filters, sort, record card grid and pagination |
 | View Record | `/records/:id` | Supporting results on the left; selected record and metadata on the right |
-| About | `/about` | Centered logo, three approved image areas and department/source copy |
+| About section | `/#about` | Below Home on the same page; centered logo, three approved image areas and department/source copy. `/about` redirects here. |
 | Admin Login | `/admin/login` | Image area and login panel; email and password only |
 | Record Management | `/admin/records` | Horizontal navigation, toolbar, status tabs and records table |
 | Add or Edit Record | `/admin/records/new`, `/admin/records/:id/edit` | Reuse the same large form layout for both states |
+
+Public navigation is Home, About and Records, with a theme toggle. About scrolls to the section below Home; Records opens `/records`. Admin Login is accessed directly at `/admin/login` and is not in the public navigation. This follows gerikah's navigation revision of 22 October 2026.
 
 Import CSV, Help, classification editing, record review and confirmations are dialogs inside these layouts. Keep the administrator navigation horizontal. Do not add separate dashboard, analytics or user management pages to this MVP.
 
