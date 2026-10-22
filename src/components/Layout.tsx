@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Dialog, Icon, Logo, SourceNote } from './Shared'
+import { logOut, useAuth } from '../lib/auth'
 
 function ThemeToggle() {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme ?? 'light')
@@ -38,6 +39,7 @@ export function PublicHeader() {
 }
 
 export function AdminHeader() {
+  const access = useAuth()
   const [help, setHelp] = useState(false)
   const [account, setAccount] = useState(false)
   return <header className="site-header"><div className="admin-header container">
@@ -52,16 +54,17 @@ export function AdminHeader() {
   </div>
   {help && <Dialog title="Help with Sipi" onClose={() => setHelp(false)}>
     <p>Use Add record to try the form. Author names can be added and reordered. Entries stay only on the current page.</p>
-    <p>Saving, publishing, archiving and CSV import are not available yet. Records will start as drafts. Publishing will require a title, completion year, at least one author and a compendium source.</p>
+    <p>Saving, publishing, archiving and CSV import are not available yet. Records will start as drafts. Publishing will require a title, academic year, at least one author and a compendium source.</p>
     <SourceNote /><Link to="/">Back to repository</Link>
   </Dialog>}
-  {account && <Dialog title="Administrator account" onClose={() => setAccount(false)}><p>No administrator is logged in. Login is not available yet.</p><button disabled>Log out</button></Dialog>}
+  {account && <Dialog title="Administrator account" onClose={() => setAccount(false)}><p>{access.email}</p><button onClick={() => { void logOut() }}>Log out</button></Dialog>}
   </header>
 }
 
 export function Layout() {
+  const access = useAuth()
   const { pathname, hash, key } = useLocation()
-  const admin = pathname.startsWith('/admin/records')
+  const admin = pathname.startsWith('/admin/records') && access.status === 'approved'
   useLayoutEffect(() => {
     const header = document.querySelector<HTMLElement>('.site-header')
     if (!header) return
@@ -70,7 +73,7 @@ export function Layout() {
     const observer = new ResizeObserver(measure)
     observer.observe(header)
     return () => observer.disconnect()
-  }, [pathname])
+  }, [pathname, admin])
   useEffect(() => {
     const target = document.getElementById(hash === '#about' ? 'about' : 'main')
     target?.focus({ preventScroll: true })

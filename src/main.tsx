@@ -9,6 +9,7 @@ import { Layout, RouteError } from './components/Layout'
 import { Home, SearchResults, ViewRecord, NotFound } from './pages/PublicPages'
 import { Login, RecordManagement } from './pages/AdminPages'
 import { RecordForm } from './pages/RecordForm'
+import { RequireAdmin } from './lib/auth'
 import './styles.css'
 
 const router = createBrowserRouter([{
@@ -20,9 +21,11 @@ const router = createBrowserRouter([{
     { path: '/records', element: <SearchResults /> },
     { path: '/records/:id', element: <ViewRecord /> },
     { path: '/admin/login', element: <Login /> },
-    { path: '/admin/records', element: <RecordManagement /> },
-    { path: '/admin/records/new', element: <RecordForm key="new" /> },
-    { path: '/admin/records/:id/edit', element: <RecordForm key="edit" editing /> },
+    { element: <RequireAdmin />, children: [
+      { path: '/admin/records', element: <RecordManagement /> },
+      { path: '/admin/records/new', element: <RecordForm key="new" /> },
+      { path: '/admin/records/:id/edit', element: <RecordForm key="edit" editing /> },
+    ] },
     { path: '*', element: <NotFound /> },
   ],
 }])

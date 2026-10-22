@@ -1,72 +1,67 @@
-# Sipi
+﻿# Sipi
 
-Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. It uses React, TypeScript, Vite and React Router. Supabase database and administrator access will follow in Phase 2.
+Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. It uses React, TypeScript, Vite, React Router and Supabase.
 
 ## Run locally
 
-Use Node.js 24 (or Node.js 22.12 or later).
+Use Node.js 24 (or 22.12 or later):
 
 ```sh
 npm ci
 npm run dev
 ```
 
-On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. The local interface works without environment variables or a backend. It contains no thesis records. Form input stays in memory on the current page; it is never saved or sent anywhere. Only the selected theme is stored in localStorage.
+On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Public pages work without a backend and contain no thesis records. Administrator routes now require a verified Supabase session and active database membership. Form input remains local and unsaved; save, publish, archive and CSV import controls remain disabled.
+
+For login setup, migrations, required dashboard settings and first-administrator provisioning, read [Phase 2 setup](docs/phase-2-setup.md). Copy `.env.example` to `.env.local` only if no environment file exists. Supply only the project URL and publishable key. The actual environment is ignored by Git. Never put secret/service-role keys or database passwords in frontend configuration.
 
 ## Checks
 
 ```sh
 npm run typecheck
 npm run lint
+npm run test:db
 npm run build
+npm run check:env
 npm test
 ```
 
-Browser tests run against the production build using locally installed Google Chrome. Install Chrome, or change the Playwright channel to an available Chromium browser. Run `npm run build` before `npm test`. The test runner starts and stops Vite preview on `127.0.0.1:4183` in the same process, avoiding Windows shell process cleanup issues. Tests cover navigation, direct route refresh, themes, filters, keyboard dialogs, unsaved changes, empty states, accessibility and responsive overflow. Screenshots are written under ignored `test-results/` folders.
+Database tests use a disposable PGlite PostgreSQL engine with test-only Auth claims. They execute migrations, grants, RLS and transactional functions; they do not verify live Supabase Auth or PostgREST. Browser tests build an isolated bundle with mocked loopback Auth responses and use locally installed Chrome. No test requests contact the configured remote project. Screenshots are in ignored `test-results/` folders.
+
+The browser suite covers approved/denied/revoked access, session restoration, expiry, login errors, logout and local data clearing, plus navigation, themes, direct route refresh, filters, keyboard dialogs, unsaved edits, accessibility and desktop/tablet/mobile layouts. `check:env` verifies ignored environment files and checks the production output for configured sensitive values without printing those values.
 
 ## Routes
 
 | Page | Route |
 | --- | --- |
-| Home | `/` |
+| Home and About | `/`, `/#about`; `/about` redirects |
 | Search results | `/records` |
 | View record | `/records/:id` |
-| About section below Home | `/#about` (`/about` redirects here) |
 | Admin login | `/admin/login` |
-| Record management | `/admin/records` |
-| Add / edit record (shared layout) | `/admin/records/new`, `/admin/records/:id/edit` |
+| Protected record management | `/admin/records` |
+| Protected add/edit form | `/admin/records/new`, `/admin/records/:id/edit` |
 
-Public navigation shows Home, About and Records. About scrolls to the section below Home; Records opens the card results screen. Admin login is available directly at `/admin/login` without a public navigation link.
+Public navigation shows Home, About and Records. Login is accessed directly. The shared header stays visible while scrolling, supports both themes, and keeps administrator navigation horizontal. Unknown records show an unavailable state. No thesis data is invented or imported.
 
-Unknown record IDs show “Record not found.” The edit route uses the same form with fields disabled because no stored record exists. Administrator pages are explicitly labeled local previews and provide no authentication or data access. Login, logout, import, save and publish remain disabled. Use “Preview record management” on the login page to inspect the workspace.
+## Repository
 
-## Implementation
+- `AGENTS.md`: scope, architecture and development rules.
+- `docs/design.md`, `docs/content.md`: visual and content specifications.
+- `docs/database_schema.md`: supplied compendium mapping and schema rationale.
+- `docs/phase-1-review.md`, `docs/phase-2-setup.md`: progress, verification and remaining gates.
+- `docs/references/`: seven supplied wireframes; `public/images/`: supplied assets.
+- `src/components/`, `src/pages/`, `src/styles.css`: shared UI, layouts and design tokens.
+- `src/lib/`: Supabase configuration and administrator access/session handling.
+- `supabase/migrations/`: baseline plus additive security and transactional RPC migration.
+- `sipi_schema.sql`: unchanged reference SQL, copied into the baseline migration. Do not apply it separately.
+- `tests/`: isolated browser and database checks.
 
-- `src/components/`: public/admin headers, theme toggle, search controls, dialogs and common states.
-- `src/pages/`: the seven layouts, shared add/edit form and record card structure.
-- `src/styles.css`: shared tokens, light/dark modes and responsive rules.
-- `public/theme.js`: system or saved theme before first paint; tolerates blocked browser storage.
-- `tests/`: browser interaction and accessibility checks. Test inputs never populate the app or screenshots as department records.
+Quicksand headings and Nunito body text are self-hosted through Fontsource. Licenses are in `public/licenses/`. The shared logo uses the supplied complete wordmark. Home and About use the four supplied research illustrations; About has no repeated logo. No images or contact details were invented.
 
-The supplied asset contains only the Sipi symbol. It is used unchanged alongside the name in Quicksand; a CSS inversion keeps the symbol visible in dark mode. Quicksand 600/700 and Nunito 400/600 are self-hosted through Fontsource, with `font-display: swap`. Their SIL Open Font Licenses are included in `public/licenses/`.
+## Hosting and progress
 
-## Later Netlify deployment
+No site or remote database changes were deployed. `netlify.toml` uses `npm run build`, publishes `dist`, and selects Node.js 24. `public/_redirects` provides the SPA rewrite for direct route refresh. Use an approved development Supabase project for previews and configure production Auth URLs separately.
 
-This phase is local only; no site has been deployed. `netlify.toml` sets `npm run build`, `dist`, and Node.js 24. `public/_redirects` is copied into `dist` and rewrites all application routes to `index.html` with status 200, following [Netlify’s SPA routing guidance](https://docs.netlify.com/manage/routing/redirects/rewrites-proxies/).
+Phase 1 local layouts are complete. Phase 2 migrations and administrator access are implemented and tested locally with the limits documented in [Phase 2 setup](docs/phase-2-setup.md). Docker/system PostgreSQL are unavailable and the configured remote project is read-only for this task. Full Supabase Auth/API checks and administrator provisioning remain required before live acceptance.
 
-When Phase 2 is ready, copy `.env.example` to `.env.local` and supply only the Supabase project URL and publishable key. Use a nonproduction project for previews. Do not add secret keys, service role keys, database passwords or compendium files to the frontend or Git. Configure production Auth URLs separately, then verify direct detail and admin links on the actual host.
-
-## Phase progress
-
-Phase 1 local implementation and browser review are complete. See [Phase 1 review](docs/phase-1-review.md) for check results and limitations. Hosted preview verification remains deferred.
-
-The following dependencies remain open:
-
-- The separate Sipi MVP Architecture and Development Plan was not present in this checkout. `AGENTS.md`, `design.md` and `content.md` supplied the implementation requirements.
-- The source CSV, its column mapping and verified coverage years are pending.
-- Approved department/campus/research images and contact details are pending. Reserved image areas contain no images or captions.
-- A hosted preview and nonproduction Supabase configuration are deferred by gerikah’s instruction to work locally.
-
-Phase 2 will add database migrations, RLS policies and deliberate grants, active administrator membership checks, transactional RPC writes, Supabase login/logout, session handling and access-denied states. Direct API allow/deny checks must cover visitors, unapproved users and disabled administrators. A hidden button or frontend route is not authorization.
-
-Record lifecycle integration follows in Phase 3, public database discovery in Phase 4, and the verified CSV import workflow in Phase 5. Analytics, PDFs and student accounts remain outside the MVP.
+The supplied mapping identifies academic years 2015-2016, 2018-2019 and 2019-2020; this is not continuous or full-compendium coverage. No source, academic-year or thesis rows are seeded. The separate development-plan document and CSV file are not present in this checkout. Phase 3 connects record management, Phase 4 connects public discovery, and Phase 5 implements reviewed CSV import. PDFs, analytics and student accounts remain outside the MVP.

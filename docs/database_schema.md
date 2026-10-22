@@ -8,7 +8,7 @@ This schema is based on the supplied `cpe_thesis_repository.csv` and the Sipi MV
 
 Before using it in a repository where Phase 2 migrations already exist, compare names and relationships and write an incremental migration. Do not run it over existing tables or drop existing data. Apply once through a development migration before production.
 
-Application writes remain disabled in this foundation. Implement the transaction functions listed below before connecting save, publish or import controls. No live Supabase database was changed. The SQL has not been executed against PostgreSQL in this environment; run the verification checklist before applying it to a live project.
+Direct application table writes remain disabled. The second migration implements save/status RPCs; record forms remain disconnected until Phase 3 and import until Phase 5. No live Supabase database was changed. The baseline and additive RPC migration are now verified in disposable PGlite PostgreSQL tests; full Supabase Auth/PostgREST checks remain pending. See [Phase 2 setup](phase-2-setup.md).
 
 ## What the CSV actually contains
 
@@ -88,7 +88,7 @@ Drafts can omit title, academic year, source or authors. Publishing requires a t
 
 The row CHECK handles same-row requirements. Deferred triggers ensure a published thesis still has an author at transaction end, including when authors are removed or moved. Author and adviser ordering is unique per thesis and can be rearranged in a transaction.
 
-`touch_thesis` updates version and timestamp. A future save function must lock the record and compare the supplied expected version before writing. A child-only edit must also update its parent thesis so its version changes. Do not increment versions separately in the client.
+`touch_thesis` updates version and timestamp. The save RPC locks the record and compares the supplied expected version before writing. A child-only edit must also update its parent thesis so its version changes. Do not increment versions separately in the client.
 
 Restore archived records to draft before publishing again. Archive rather than expose hard deletion. Imported records remain drafts until reviewed.
 
@@ -108,9 +108,9 @@ Both browser roles have SELECT grants only. No INSERT, UPDATE or DELETE grants o
 
 Do not put a service role key in Netlify frontend variables. Public project URL and publishable key can be used by the browser; policies remain the access boundary.
 
-## Next migration for Codex
+## Implemented and remaining database functions
 
-Implement these functions before enabling management buttons:
+Functions 1 and 2 are implemented in the second migration; the remaining functions belong to later phases. See the RPC contract in `phase-2-setup.md` before enabling management buttons:
 
 1. `save_record(payload, expected_version)`: authenticate an active administrator; validate and lock; save metadata and all associations; touch parent version; write a trusted audit event in one transaction.
 2. `set_record_status(id, status, expected_version)`: check caller, allowed transition, publication requirements and version; set publication timestamp when publishing; write audit history.

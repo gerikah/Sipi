@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { mockAuth } from './auth-fixtures'
+
+test.beforeEach(async ({ page }) => { await mockAuth(page, true) })
 
 const routes = ['/', '/about', '/records', '/records/unavailable', '/admin/login', '/admin/records', '/admin/records/new', '/admin/records/unavailable/edit']
 
@@ -15,6 +18,7 @@ test('all layouts support direct links, refresh, both themes and narrow widths',
         await page.goto(route)
         await page.reload()
         await expect(page.locator('main')).toBeVisible()
+        if (route.startsWith('/admin/records')) await expect(page.getByRole('navigation', { name: 'Administrator navigation' })).toBeVisible()
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme)
         await page.evaluate(async () => {
           await Promise.all([document.fonts.load('600 24px Quicksand'), document.fonts.load('700 40px Quicksand'), document.fonts.load('400 16px Nunito'), document.fonts.load('600 16px Nunito')])
@@ -37,7 +41,7 @@ test('theme selection persists through navigation and refresh; storage denial is
   await page.getByRole('link', { name: 'About', exact: true }).click()
   await expect(page).toHaveURL(/\/#about$/)
   await expect(page.locator('#about')).toBeFocused()
-  await expect(page.locator('#about .logo')).toBeInViewport()
+  await expect(page.locator('#about .about-images')).toBeInViewport()
   const header = await page.locator('.site-header').boundingBox()
   const about = await page.locator('#about').boundingBox()
   expect(about!.y).toBeGreaterThanOrEqual(header!.y + header!.height)
@@ -110,7 +114,7 @@ test('local form reorders names and guards unsaved edits without saving records'
   await expect(page.getByLabel('Thesis title *', { exact: true })).toHaveValue('')
 })
 
-test('mobile navigation, login visibility and status selection work without authentication', async ({ page }) => {
+test('mobile navigation, login visibility and approved workspace status selection work', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await page.getByRole('button', { name: 'Menu', exact: true }).click()
@@ -132,8 +136,8 @@ test('mobile navigation, login visibility and status selection work without auth
   await page.getByLabel('Password', { exact: true }).fill('local-input-check')
   await page.getByRole('checkbox', { name: 'Show password' }).check()
   await expect(page.getByLabel('Password', { exact: true })).toHaveAttribute('type', 'text')
-  await expect(page.getByRole('button', { name: 'Log in', exact: true })).toBeDisabled()
-  await page.getByRole('link', { name: 'Preview record management' }).click()
+  await expect(page.getByRole('button', { name: 'Log in', exact: true })).toBeEnabled()
+  await page.goto('/admin/records')
   await page.getByRole('button', { name: 'Archived', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Archived', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await page.reload()
@@ -150,6 +154,7 @@ test('accessible page structure and contrast in both themes', async ({ page }) =
     await page.emulateMedia({ colorScheme: theme })
     for (const route of routes) {
       await page.goto(route)
+      if (route.startsWith('/admin/records')) await expect(page.getByRole('navigation', { name: 'Administrator navigation' })).toBeVisible()
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()
       expect(results.violations, `${theme} ${route}`).toEqual([])
     }

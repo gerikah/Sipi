@@ -56,3 +56,7 @@ Round 2:
 Phase 2: database schema and migrations, RLS and grants, active administrator checks, transactional write functions, login/logout and sessions. Protect all record-related metadata and clear protected data on logout. Verify direct API authorization, including disabled administrators with existing sessions.
 
 Phase 3–5: persistent records and lifecycle, real public queries, classification/review dialogs, transactional CSV import after the actual compendium is supplied. No backend, authentication or import behavior is claimed complete in Phase 1.
+
+## Phase 2 follow-up
+
+This document records the Phase 1 review. Its pending source years and preview-only authentication descriptions are historical. The source mapping, protected routes and authentication now follow [Phase 2 setup](phase-2-setup.md). Wireframes are in `docs/references/`; the supplied logo is in `public/images/`.

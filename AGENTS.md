@@ -2,16 +2,16 @@
 
 ## Project purpose
 
-Build Sipi, a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The records come from a department compendium; the CSV and its verified coverage years are pending.
+Build Sipi, a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The records come from a department compendium; the supplied mapping verifies academic years 2015-2016, 2018-2019 and 2019-2020 in the available subset, not continuous or full compendium coverage. The CSV is not imported in Phase 2.
 
 Address the project owner as gerikah. Use plain words in interface copy and documentation.
 
 ## Read before implementing
 
 1. Read this file for scope, architecture, phases and checks.
-2. Read `design.md` for the palette, typography, spacing, themes and layouts.
-3. Read `content.md` for screen copy, field placement and empty states.
-4. Consult the Sipi MVP Architecture and Development Plan for fuller rationale and the supplied seven wireframes for visual structure.
+2. Read `docs/design.md` for the palette, typography, spacing, themes and layouts.
+3. Read `docs/content.md` for screen copy, field placement and empty states.
+4. Read `docs/database_schema.md` and `docs/phase-2-setup.md`; consult `docs/development-plan.md` if present and the seven wireframes in `docs/references/`.
 5. Inspect the repository and its existing scripts before creating or replacing implementation files. Continue completed work; do not scaffold over it.
 
 These files describe planned behavior, not verified implementation progress. Resolve conflicts in favor of gerikah's latest explicit instruction. Record material changes to scope or architecture in project documentation so the files stay aligned.
@@ -34,7 +34,7 @@ This supersedes the earlier Laravel, Inertia, MySQL and XAMPP proposal. Do not r
 | Home | `/` | Centered logo and search; lower description, source note and approved image area |
 | Search Results | `/records` | Search toolbar, filters, sort, record card grid and pagination |
 | View Record | `/records/:id` | Supporting results on the left; selected record and metadata on the right |
-| About section | `/#about` | Below Home on the same page; centered logo, three approved image areas and department/source copy. `/about` redirects here. |
+| About section | `/#about` | Below Home on the same page; three supplied illustrations and department/source copy, without a repeated logo. `/about` redirects here. |
 | Admin Login | `/admin/login` | Image area and login panel; email and password only |
 | Record Management | `/admin/records` | Horizontal navigation, toolbar, status tabs and records table |
 | Add or Edit Record | `/admin/records/new`, `/admin/records/:id/edit` | Reuse the same large form layout for both states |
@@ -49,8 +49,8 @@ Later scope: PDFs and downloads, student accounts and submissions, faculty/staff
 
 - Preserve gerikah's wireframe structure; do not redesign the navigation or replace the form with a narrow drawer.
 - Use Quicksand headings and Nunito body text.
-- Use the palette and readable light/dark theme assignments from `design.md`.
-- Font sizes, line heights, spacing, radii and fixed control dimensions use multiples of 8px. Borders and focus strokes may use the explicit 1px and 2px exceptions in `design.md`.
+- Use the palette and readable light/dark theme assignments from `docs/design.md`.
+- Font sizes, line heights, spacing, radii and fixed control dimensions use multiples of 8px. Borders and focus strokes may use the explicit 1px and 2px exceptions in `docs/design.md`.
 - Keep shared headers, search controls, cards, form fields and dialogs consistent.
 - Support keyboard navigation, visible focus, mobile layouts, loading, empty and error states.
 - Do not invent thesis records, totals, years, images, contacts or official endorsements. Keep source years pending until verified.
@@ -73,21 +73,23 @@ Only the Supabase URL and publishable key belong in browser configuration. Never
 
 | Tables | Responsibility |
 | --- | --- |
-| `auth.users`, `administrators` | Managed credentials and approved active admin membership |
+| `auth.users`, `private.administrators` | Managed credentials and approved active admin membership |
 | `theses` | UUID, unique repository code, metadata, status, source, version and timestamps |
-| `authors`, `thesis_authors` | Author identity, association and author order |
-| `advisers`, `thesis_advisers` | Adviser identity and associations |
+| `thesis_authors` | Per-thesis names and author order; no guessed global identity |
+| `faculty_members`, `thesis_advisers`, `thesis_panel_members` | Reviewed faculty identities and ordered associations |
 | `topics`, `thesis_topics` | Controlled topics and associations |
 | `keywords`, `thesis_keywords` | Normalized keywords and associations |
+| `academic_years` | Adjacent start/end years; full display label |
+| `private.author_identifiers` | Optional student identifiers, never public |
 | `sources` | Compendium label, nullable coverage years and verification flag |
-| `import_batches`, `import_rows` | Mapping, staged data, validation, review and commit result |
-| `audit_logs` | Trusted record of actor, action, changed fields and timestamp |
+| `private.import_batches`, `private.import_rows` | Mapping, staged data, validation, review and commit result |
+| `private.audit_logs` | Trusted record of actor, action, changed fields and timestamp |
 
-Use migrations under `supabase/migrations`. Enforce foreign keys, unique association pairs, author ordering and allowed statuses. Do not treat people's names as unique identities. Keep source coverage separate from thesis completion year.
+Use migrations under `supabase/migrations`. Enforce foreign keys, unique association pairs, author ordering and allowed statuses. Do not treat people's names as unique identities. Keep source coverage separate from thesis academic year.
 
 ## Record lifecycle and database operations
 
-New and imported records start as drafts. Drafts may be incomplete, but supplied values must be valid. Publishing requires title, completion year, at least one author and a selected source. Abstract, advisers, topics and keywords remain optional until the CSV establishes available metadata.
+New and imported records start as drafts. Drafts may be incomplete, but supplied values must be valid. Publishing requires title, academic year, at least one author and a selected source. Abstract, advisers, topics and keywords remain optional until the CSV establishes available metadata.
 
 Allowed transitions: draft to published or archived; published to draft or archived; archived to draft. Publishing always rechecks requirements. Preserve associations when archiving. Use a version value to reject stale edits.
 
@@ -100,7 +102,7 @@ Preserve query, filters, sort and page when opening a record or navigating Back.
 
 ## CSV import rules
 
-Do not guess the CSV columns, author delimiters or coverage dates. Inspect the supplied compendium when it arrives. Other development can proceed before the CSV is available; final mapping and source verification depend on it.
+Use `docs/database_schema.md` for the supplied CSV mapping. Preserve ordered authors/advisers, group codes, section blocks, archive IDs and timestamps without guessing a timezone. Reinspect the actual CSV before Phase 5 splitting and import; missing values stay empty and student numbers remain private. Broader compendium coverage still requires independent verification.
 
 The import dialog has four steps: Upload CSV, Map columns, Review rows and Import summary. Proposed initial limits are 2 MB and 500 rows per batch, subject to measured performance. Parse UTF 8 CSV in the browser and stage normalized rows for database revalidation. Preserve original row references and author order.
 
@@ -132,7 +134,7 @@ Exit: the full record lifecycle works and relationships and audit history remain
 
 ### Phase 4 Public discovery
 
-Connect search, filters, sorting, cards, pagination and record details. Apply `content.md` copy and preserve search context.
+Connect search, filters, sorting, cards, pagination and record details. Apply `docs/content.md` copy and preserve search context.
 
 Exit: a published record is discoverable and shareable; unpublished IDs remain unavailable; loading, empty and query failure states work.
 

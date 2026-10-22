@@ -34,7 +34,7 @@ export function RecordForm({ editing = false }: { editing?: boolean }) {
       <p>* Required fields for publishing. Drafts may be incomplete.</p>
       <fieldset disabled={editing} className="form-fields">
         <label>Thesis title *<textarea rows={2} placeholder="Enter thesis title" /></label>
-        <div className="field-pair"><PeopleFields label="Authors" required disabled={editing} people={authors} onChange={(next) => { setAuthors(next); setDirty(true) }} /><label>Completion year *<input inputMode="numeric" maxLength={4} placeholder="YYYY" /></label></div>
+        <div className="field-pair"><PeopleFields label="Authors" required disabled={editing} people={authors} onChange={(next) => { setAuthors(next); setDirty(true) }} /><label>Academic year *<input inputMode="numeric" maxLength={9} placeholder="YYYY-YYYY" /></label></div>
         <div className="field-pair"><PeopleFields label="Advisers" disabled={editing} people={advisers} onChange={(next) => { setAdvisers(next); setDirty(true) }} /><label>Topics (optional)<select disabled><option>No topics available yet</option></select><span className="field-note">Topic selection and editing are not available yet.</span></label></div>
         <div className="field-pair"><label>Keywords (optional)<input placeholder="Enter keywords" /><span className="field-note">Keyword editing is a local preview.</span></label><label>Compendium source *<select disabled><option>No sources available yet</option></select><span className="field-note">Required for publishing; optional for a draft.</span></label></div>
         <div className="form-bottom"><label>Abstract (optional)<textarea className="abstract-input" placeholder="Enter the abstract if available" /></label>

@@ -15,7 +15,7 @@ export function SearchForm({ home = false, admin = false }: { home?: boolean; ad
     navigate({ pathname: admin ? '/admin/records' : '/records', search: next.toString() })
   }
   return <form className="search-form" onSubmit={submit} role="search">
-    <label htmlFor={id}>{admin ? 'Search records' : 'Search thesis records'}</label>
+    <label htmlFor={id} className={admin ? undefined : 'sr-only'}>{admin ? 'Search records' : 'Search thesis records'}</label>
     <div className="search-control"><Icon name="search" /><input key={params.get('q') ?? ''} id={id} name="q" type="search" defaultValue={params.get('q') ?? ''} placeholder="Search by title, author, or keyword" /><button type="submit">Search</button></div>
   </form>
 }
@@ -28,13 +28,13 @@ function Filters({ onClose }: { onClose: () => void }) {
     const data = new FormData(e.currentTarget)
     const from = String(data.get('year_from') ?? '')
     const to = String(data.get('year_to') ?? '')
-    if ((from && !/^\d{4}$/.test(from)) || (to && !/^\d{4}$/.test(to))) { setError('Enter a four-digit completion year.'); return }
+    if ((from && !/^\d{4}$/.test(from)) || (to && !/^\d{4}$/.test(to))) { setError('Enter a four-digit academic-year start.'); return }
     if (from && to && Number(from) > Number(to)) { setError('The start year must be before or equal to the end year.'); return }
     const next = new URLSearchParams(params)
     for (const [key, value] of [['year_from', from], ['year_to', to]]) { if (value) next.set(key, value); else next.delete(key) }
     next.delete('page'); setParams(next); onClose()
   }}>
-    <p>Filter by thesis completion year. Compendium coverage years are separate.</p>
+    <p>Filter by the starting year of each academic year. Compendium coverage is separate.</p>
     <div className="field-pair"><label>From year<input name="year_from" inputMode="numeric" maxLength={4} placeholder="YYYY" defaultValue={params.get('year_from') ?? ''} /></label><label>To year<input name="year_to" inputMode="numeric" maxLength={4} placeholder="YYYY" defaultValue={params.get('year_to') ?? ''} /></label></div>
     <label>Topic<select disabled><option>No topics available yet</option></select></label>
     {error && <p className="error" role="alert">{error}</p>}
@@ -50,9 +50,9 @@ export function SearchToolbar({ admin = false }: { admin?: boolean }) {
   return <><div className={`search-toolbar${admin ? ' admin-search' : ''}`}>
     {!admin && <Logo />}<SearchForm admin={admin} />
     <button className="filter-button" onClick={() => setFilters(true)}><Icon name="filter" />Filter{active ? ' · Applied' : ''}</button>
-    <label className="sort-control">Sort<select aria-label="Sort records" value={sort} onChange={(e) => { const next = new URLSearchParams(params); next.set('sort', e.target.value); next.delete('page'); setParams(next) }}><option value="newest">Newest year</option><option value="oldest">Oldest year</option><option value="title">Title A to Z</option></select></label>
+    <label className="sort-control"><span className="sr-only">Sort records</span><select aria-label="Sort records" value={sort} onChange={(e) => { const next = new URLSearchParams(params); next.set('sort', e.target.value); next.delete('page'); setParams(next) }}><option value="newest">Newest year</option><option value="oldest">Oldest year</option><option value="title">Title A to Z</option></select></label>
   </div>
-  {active && <div className="filter-summary"><span>Completion year: {params.get('year_from') || 'Any'} to {params.get('year_to') || 'Any'}</span><button onClick={() => { const next = new URLSearchParams(params); ['year_from', 'year_to', 'topic_id', 'page'].forEach((key) => next.delete(key)); setParams(next) }}>Clear filters</button></div>}
+  {active && <div className="filter-summary"><span>Academic year: {params.get('year_from') || 'Any'} to {params.get('year_to') || 'Any'}</span><button onClick={() => { const next = new URLSearchParams(params); ['year_from', 'year_to', 'topic_id', 'page'].forEach((key) => next.delete(key)); setParams(next) }}>Clear filters</button></div>}
   {filters && <Filters onClose={() => setFilters(false)} />}
   </>
 }

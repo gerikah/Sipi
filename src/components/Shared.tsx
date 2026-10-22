@@ -1,9 +1,8 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import logo from '../../Sipi Assets and References/Logo.png'
 
 export function Logo({ large = false }: { large?: boolean }) {
-  return <Link to="/" className={`logo${large ? ' logo-large' : ''}`}><img src={logo} alt="Sipi home" /><span aria-hidden="true">sipi</span></Link>
+  return <Link to="/" className={`logo${large ? ' logo-large' : ''}`}><img src="/images/Logo Word.png" width="500" height="193" alt="Sipi home" /></Link>
 }
 
 export function Icon({ name }: { name: 'search' | 'sun' | 'moon' | 'filter' | 'arrow' }) {
@@ -18,16 +17,16 @@ export function Icon({ name }: { name: 'search' | 'sun' | 'moon' | 'filter' | 'a
 }
 
 export function SourceNote() {
-  return <p>Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the department compendium. Coverage years are pending verification.</p>
+  return <p>Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the available compendium records for academic years 2015–2016, 2018–2019, and 2019–2020.</p>
 }
 
-// Reserved geometry only: no invented image, caption, or alternative text.
-export function ImageArea({ className = '' }: { className?: string }) {
+export function ImageArea({ className = '', src, alt = '' }: { className?: string; src?: string; alt?: string }) {
+  if (src) return <div className={`image-area image-filled ${className}`}><img src={src} alt={alt} loading="lazy" decoding="async" /></div>
   return <div className={`image-area ${className}`} aria-hidden="true" />
 }
 
 export function PhaseNotice() {
-  return <p className="notice">Local interface preview. Login and record changes are not available yet. Nothing entered here is saved.</p>
+  return <p className="notice">Record changes are not available yet. Form entries stay on this page and are not saved.</p>
 }
 
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {

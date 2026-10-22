@@ -1,6 +1,6 @@
 # Sipi screen content
 
-Use this file for interface copy and field placement. Follow `design.md` for appearance and `AGENTS.md` for development rules. Derived from the Sipi MVP Architecture and Development Plan version 2.0.
+Use this file for interface copy and field placement. Follow [design.md](design.md) for appearance and [AGENTS.md](../AGENTS.md) for development rules. Derived from the Sipi MVP Architecture and Development Plan version 2.0.
 
 ## Shared content rules
 
@@ -11,11 +11,9 @@ Use this file for interface copy and field placement. Follow `design.md` for app
 
 ## Required source note
 
-Phase 1 live copy uses the department wording below and replaces the unverified year clause with: “based on the department compendium. Coverage years are pending verification.” Do not display the bracketed years in the running app. Contact notes stay omitted until a real approved contact is available.
+Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the available compendium records for academic years 2015–2016, 2018–2019, and 2019–2020.
 
-Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the department compendium from [start year] to [end year].
-
-Place this note on Home and About. Keep coverage years pending until the CSV is checked; source coverage is separate from thesis completion dates.
+Place this note on Home and About. These are separate verified academic years in the available subset, not continuous coverage. Broader compendium coverage stays unset. No records have been imported. Contact notes stay omitted until an approved contact is supplied.
 
 ## Shared navigation
 
@@ -35,11 +33,11 @@ The following sections map content to the supplied wireframes. Square brackets n
 | --- | --- |
 | Top navigation | Home  /  About  /  Records. Add a compact theme toggle in the same header. |
 | Centered brand | Sipi logo as supplied. Accessible image label: Sipi home. |
-| Centered search | Label: Search thesis records. Placeholder: Search by title, author, or keyword. Enter submits to /records. |
+| Centered search | Screen reader label: Search thesis records (visually hidden). Placeholder: Search by title, author, or keyword. Enter submits to /records. |
 | Lower left heading | Thesis records, easier to find. |
 | Lower left description | Browse thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. |
-| Lower left note panel | Required source note from section 1, including [start year] and [end year]. |
-| Lower right image | [Approved department or campus image]. Keep empty until supplied; do not use a thesis cover as a generic image. |
+| Lower left note panel | Required source note with the three verified academic years. |
+| Lower right image | Supplied illustration: `public/images/Filing theses beside an archive laptop.png`. |
 
 Before the compendium is loaded, searching opens a real empty state: “No thesis records are available yet.” Do not show invented totals, recent theses or coverage dates.
 
@@ -49,8 +47,8 @@ Home and About share one scrolling page. The About navigation link targets `/#ab
 
 | Wireframe area | Content to add |
 | --- | --- |
-| Top navigation and brand | Reuse Home navigation, theme toggle and centered Sipi logo. |
-| Three image panels | [Approved department image]  /  [Approved campus image]  /  [Approved research image]. Keep image sources and captions empty until approved. |
+| Top navigation and brand | Reuse the Home navigation and theme toggle; do not repeat the logo in About. |
+| Three image panels | Supplied open-book, examining-research and exploring-compendium illustrations from `public/images/`, in that order. |
 | Heading below images | About Sipi |
 | Description | Sipi helps students and faculty find thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. |
 | Source paragraph | Use the complete required source note from section 1. |
@@ -66,10 +64,10 @@ Keep the three image columns and text below them on desktop. Stack them in the s
 | Wireframe area | Content to add |
 | --- | --- |
 | Top left and search | Sipi logo links Home. Search label and placeholder match Home; preserve the submitted query. |
-| Two rounded controls | Filter: year range and topic. Sort: Newest year, Oldest year or Title A to Z. Relevance may be added only with a defined ranking query. |
+| Two rounded controls | Filter: academic-year start range and topic. Sort: Newest year, Oldest year or Title A to Z. Relevance may be added only with a defined ranking query. |
 | Results summary | [result count] records; show selected filter chips and Clear filters when active. Compute counts from the filtered query. |
 | Each card heading | [Thesis title] |
-| Card inset block | [Author names] and [Completion year]. This is a metadata area, not a required thumbnail. |
+| Card inset block | [Author names] and [Academic year]. This is a metadata area, not a required thumbnail. |
 | Card text | Abstract label with [Abstract excerpt]. If missing, display “No abstract available.” |
 | Bottom chips | [Topic] and [Keyword] values only when present. Card title action: View record. |
 | Below grid | Previous  /  [page]  /  Next. Disable unavailable actions; preserve query and filters. |
@@ -84,7 +82,7 @@ Keep three card columns at desktop, two when space allows and one on mobile. Sup
 | Left stack of cards | Other records from the current result set. Use [Thesis title], [Authors], [Year] and optional tags. Highlight the selected record. Do not label these recommendations. |
 | Right main heading | [Thesis title]. Adjacent icon action: Copy record link; success message: Link copied. |
 | Main text section | Abstract heading and [Abstract]. Missing value: No abstract available. |
-| Right upper inset | Record details: [Authors], [Completion year], [Advisers], [Repository code]. |
+| Right upper inset | Record details: [Authors], [Academic year], [Advisers], [Repository code]. |
 | Tag row | [Topics] and [Keywords], omitted when absent. |
 | Lower large block | Source: [Compendium label], [Source row or page reference]. Show only references actually present. |
 | Right lower inset | Department: Computer Engineering. Campus: PUP Main Campus, Sta. Mesa, Manila. No document download action in this MVP. |
@@ -135,7 +133,7 @@ Keep the shared horizontal administrator header. Reuse this page for editing; ch
 | Top right action | Back to records. Confirm before discarding unsaved changes. |
 | Form heading | Add thesis record |
 | Full width first field | Thesis title *; placeholder: Enter thesis title. |
-| First paired row | Left: Authors * with Add author and reorder controls. Right: Completion year * with placeholder YYYY. |
+| First paired row | Left: Authors * with Add author and reorder controls. Right: Academic year * with placeholder YYYY-YYYY. |
 | Second paired row | Left: Advisers, optional repeatable entries. Right: Topics, optional searchable selection. |
 | Third paired row | Left: Keywords, optional multi value input. Right: Compendium source, optional for a draft and required before publishing. |
 | Large lower left field | Abstract, optional; placeholder: Enter the abstract if available. |
@@ -145,7 +143,7 @@ Keep the shared horizontal administrator header. Reuse this page for editing; ch
 
 ### Validation and feedback
 
-Keep labels visible above every input; placeholders do not replace labels. Required fields use an asterisk and the note “* Required fields.” On save, keep entered values and place specific messages beside invalid fields: “Enter a title”, “Add at least one author”, or “Enter a valid completion year”.
+Keep labels visible above every input; placeholders do not replace labels. Required fields use an asterisk and the note “* Required fields.” On save, keep entered values and place specific messages beside invalid fields: “Enter a title”, “Add at least one author”, or “Enter a valid academic year”.
 
 Drafts may have missing required publication fields, but any supplied value must be valid. Publishing requires title, year, at least one author and a selected source. Do not require an abstract, adviser, topic or keyword when the compendium does not provide it.
 

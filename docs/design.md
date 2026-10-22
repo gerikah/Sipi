@@ -8,13 +8,11 @@ The companion architecture document defines page copy, data rules and developmen
 
 ## Content and source note
 
-Phase 1 implementation note: while coverage is unverified, the live source note ends with “based on the department compendium. Coverage years are pending verification.” The bracketed years below remain specification markers only. Approved image regions stay empty until assets are supplied. gerikah requested local development; hosting and database configuration are deferred.
+Phase 2 source mapping supersedes the earlier pending-coverage wording. Use this note on Home and About:
 
-Use this exact note on Home and About:
+> Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the available compendium records for academic years 2015–2016, 2018–2019, and 2019–2020.
 
-> Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the department compendium from [start year] to [end year].
-
-Keep the year values unset until the compendium CSV is supplied and its coverage is verified. Do not infer source coverage just from imported completion years. Keep record values empty in design placeholders: `[Thesis title]`, `[Authors]`, `[Completion year]`, `[Abstract]`, `[Advisers]`, `[Topics]`, `[Keywords]`, `[Compendium label]`, `[Source reference]`. These labels must never become stored record values.
+The available subset is not continuous coverage. Keep broader source coverage unset. Record placeholders describe empty fields and must never become stored values. No records are imported during Phase 2.
 
 Do not invent thesis titles, names, abstracts, totals, source years, contact details, institutional endorsements or images. Use approved assets only. Missing optional data stays null or an empty list. Production uses helpful empty states rather than visible bracket placeholders.
 
@@ -151,8 +149,8 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 ### 2 Searches Card Page
 
 - Preserve Sipi logo, wide search and two rounded toolbar controls: Filter and Sort.
-- Filter opens a popover or mobile sheet for completion year range and topic. Options come from published data. Sort options: Newest year, Oldest year and Title A to Z.
-- Cards: `[Thesis title]`, `[Authors]`, `[Completion year]`, `[Abstract excerpt]`, `[Topics]`, `[Keywords]`. Use the inset block for metadata rather than a mandatory picture.
+- Filter opens a popover or mobile sheet for academic year range and topic. Options come from published data. Sort options: Newest year, Oldest year and Title A to Z.
+- Cards: `[Thesis title]`, `[Authors]`, `[Academic year]`, `[Abstract excerpt]`, `[Topics]`, `[Keywords]`. Use the inset block for metadata rather than a mandatory picture.
 - Use three columns when wide, two at medium widths and one on mobile. Cards have equal padding; avoid clipping important author information.
 - Add a real result count, clear filters and pagination without changing the overall grid structure.
 - Title links open `/records/:id`. Preserve query, filters, sort and page for Back navigation.
@@ -162,7 +160,7 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 - Preserve the toolbar, left stack of supporting record cards and wider right selected record panel.
 - Left cards show other records from the current search, not an invented recommendation feed.
 - Main panel: `[Thesis title]`, Copy record link, Abstract with `[Abstract]`, optional topic and keyword chips.
-- Right upper inset: Record details with `[Authors]`, `[Completion year]`, `[Advisers]`, `[Repository code]`.
+- Right upper inset: Record details with `[Authors]`, `[Academic year]`, `[Advisers]`, `[Repository code]`.
 - Lower large block: Source with `[Compendium label]` and `[Source row or page reference]` when present. Right lower inset: department and campus.
 - Include Back to results. For direct links use Back to all records.
 - Do not add PDF previews, cover images or download controls to fill blank shapes.
@@ -201,7 +199,7 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 
 - Preserve the shared header, Back to records action, full width first field, paired metadata rows, large lower left abstract and smaller right source panel.
 - Full width: Thesis title.
-- Row 1: Authors with add and reorder controls; Completion year.
+- Row 1: Authors with add and reorder controls; Academic year.
 - Row 2: Advisers; Topics.
 - Row 3: Keywords; Compendium source.
 - Lower left: Abstract. Lower right: Source details, automatic Record ID and Status.
@@ -269,7 +267,13 @@ Loading skeletons temporarily match component shapes. They are not the permanent
 - [ ] Shared components use the same theme tokens and spacing.
 - [ ] Light and dark modes retain clear text, borders, focus and logo visibility.
 - [ ] No invented thesis records, counts, coverage years, contacts or assets are displayed.
-- [ ] Source note appears on Home and About with pending coverage placeholders.
+- [ ] Source note names the three verified academic years without implying continuous coverage.
 - [ ] Keyboard, mobile, loading, empty, error and long content states are reviewed.
 - [ ] Search filters and navigation preserve the reader's place.
 - [ ] Admin routes and UI use Supabase permissions; hiding controls is not the security layer.
+
+## Supplied asset revision, 22 October 2026
+
+Use the complete `public/images/Logo Word.png` asset wherever the shared logo appears, preserving its proportions and inverting it for dark mode. Remove the separate logo at the beginning of About. Use the supplied filing-theses illustration beside the Home description and the other three research illustrations in About. Preserve their full composition with contain sizing and meaningful alternative text; do not label them as campus photographs. This revision supersedes earlier empty image areas and repeated About branding.
+
+Home spacing revision: public search labels and the sort label are visually hidden while retaining accessible names. The Home illustration area is at least 432px tall on wide screens and 320px on mobile. Space before About is 128px on wide screens and 80px on mobile.
