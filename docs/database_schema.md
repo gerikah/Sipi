@@ -8,7 +8,7 @@ This schema is based on the supplied `cpe_thesis_repository.csv` and the Sipi MV
 
 Before using it in a repository where Phase 2 migrations already exist, compare names and relationships and write an incremental migration. Do not run it over existing tables or drop existing data. Apply once through a development migration before production.
 
-Direct application table writes remain disabled. The second migration implements save/status RPCs; record forms remain disconnected until Phase 3 and import until Phase 5. No live Supabase database was changed. The baseline and additive RPC migration are now verified in disposable PGlite PostgreSQL tests; full Supabase Auth/PostgREST checks remain pending. See [Phase 2 setup](phase-2-setup.md).
+Direct application table writes remain disabled. The second migration implements save/status RPCs; record forms are connected in Phase 3, while import remains for Phase 5. The authorized development database now has the four repository migrations; see `phase-3-review.md`. The baseline and additive RPC migration are now verified in disposable PGlite PostgreSQL tests; full Supabase Auth/PostgREST checks remain pending. See [Phase 2 setup](phase-2-setup.md).
 
 ## What the CSV actually contains
 
@@ -110,13 +110,13 @@ Do not put a service role key in Netlify frontend variables. Public project URL 
 
 ## Implemented and remaining database functions
 
-Functions 1 and 2 are implemented in the second migration; the remaining functions belong to later phases. See the RPC contract in `phase-2-setup.md` before enabling management buttons:
+Functions 1 and 2 are implemented in the second migration. The third migration adds protected administrator reads and classification saves. Public search and import belong to later phases. See the RPC contract in `phase-2-setup.md` before enabling management buttons:
 
 1. `save_record(payload, expected_version)`: authenticate an active administrator; validate and lock; save metadata and all associations; touch parent version; write a trusted audit event in one transaction.
 2. `set_record_status(id, status, expected_version)`: check caller, allowed transition, publication requirements and version; set publication timestamp when publishing; write audit history.
 3. Import staging and review functions: enforce active administrator membership and batch ownership, validate payloads, return errors and duplicate candidates. Private tables are not directly accessible through the browser API.
 4. `commit_import(batch_id)`: lock, revalidate selected rows, check source-ID duplicates, insert drafts and relationships, save result counts and mark complete in one transaction. Completed retries return the same result.
-5. `search_records(...)`: return distinct published thesis data with academic-year filtering and stable pagination. Add a bounded admin query for internal records.
+5. `search_records(...)`: return distinct published thesis data with academic-year filtering and stable pagination. The third migration implements `admin_records` with bounded pages and `admin_record` for the edit view.
 
 Use explicit parameters, a fixed search path, qualified object names, limited EXECUTE grants and `auth.uid()` for any definer function. Never trust a payload's actor ID. Do not enable writes by simply granting browser roles full table access.
 
@@ -138,3 +138,5 @@ Use explicit parameters, a fixed search path, qualified object names, limited EX
 - Source data: supplied `cpe_thesis_repository.csv`, 142 parsed CSV records.
 - Supabase Row Level Security: https://supabase.com/docs/guides/database/postgres/row-level-security
 - PostgreSQL constraints: https://www.postgresql.org/docs/current/ddl-constraints.html
+
+Phase 3 browser-facing administrator reads represent bigint archive IDs and repository codes as decimal strings. The public save wrapper accepts archive decimal strings and converts them in SQL before the private transaction, preserving all bigint precision.

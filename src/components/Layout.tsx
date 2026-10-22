@@ -28,7 +28,9 @@ function ThemeToggle() {
 export function PublicHeader() {
   const [open, setOpen] = useState(false)
   const { pathname, hash } = useLocation()
-  return <header className="site-header"><div className="public-header container">
+  const login = pathname === '/admin/login'
+  return <header className="site-header"><div className={`public-header container${login ? ' login-header' : ''}`}>
+    {login && <Logo />}
     <button className="mobile-menu" aria-expanded={open} aria-controls="public-navigation" onClick={() => setOpen(!open)}>Menu</button>
     <nav id="public-navigation" className={open ? 'public-nav open' : 'public-nav'} aria-label="Main navigation">
       <Link to="/" aria-current={pathname === '/' && hash !== '#about' ? 'page' : undefined} onClick={() => setOpen(false)}>Home</Link>
@@ -53,8 +55,8 @@ export function AdminHeader() {
     <div className="header-actions"><ThemeToggle /><button onClick={() => setAccount(true)}>Account</button></div>
   </div>
   {help && <Dialog title="Help with Sipi" onClose={() => setHelp(false)}>
-    <p>Use Add record to try the form. Author names can be added and reordered. Entries stay only on the current page.</p>
-    <p>Saving, publishing, archiving and CSV import are not available yet. Records will start as drafts. Publishing will require a title, academic year, at least one author and a compendium source.</p>
+    <p>Use Add record to create a draft. Add authors and advisers in their original order. Save your changes before leaving the form.</p>
+    <p>Publishing requires a title, academic year, at least one author and a selected compendium source. Archive records to remove them from public searches; restore them to draft before editing. CSV import is not available yet.</p>
     <SourceNote /><Link to="/">Back to repository</Link>
   </Dialog>}
   {account && <Dialog title="Administrator account" onClose={() => setAccount(false)}><p>{access.email}</p><button onClick={() => { void logOut() }}>Log out</button></Dialog>}

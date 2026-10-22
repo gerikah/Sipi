@@ -27,7 +27,7 @@ async function verify(session: Session | null) {
     const { data, error } = await supabase.rpc('is_admin')
     if (current !== generation) return
     if (error) { publish({ status: 'error', message: 'We could not check administrator access. Check your connection or database setup and try again.' }); return }
-    publish(data === true ? { status: 'approved', email: userData.user.email } : { status: 'denied', message: 'You do not have access to this page. An active administrator account is required.' })
+    publish(data === true ? { status: 'approved', email: userData.user.email } : { status: 'denied', message: 'You are signed in, but your account is not approved as an active administrator. Ask the project owner to approve your access.' })
   } catch {
     if (current === generation) publish({ status: 'error', message: 'We could not verify your session. Check your connection and try again.' })
   }

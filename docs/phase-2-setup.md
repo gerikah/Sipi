@@ -1,5 +1,8 @@
 # Phase 2 setup and verification
 
+Historical Phase 2 notes below are superseded where applicable by [Phase 3 review](phase-3-review.md). gerikah subsequently authorized the connected development project, the pending migrations were applied, and record management is connected. The source catalog is still empty.
+
+
 ## Current state
 
 Phase 2 code is implemented locally. The connected Sipi project's `public` and `private` schemas and migration history were inspected read-only on 22 October 2026; no application tables or migrations existed. No remote schema, Auth settings, accounts, or records were changed. The supplied `sipi_schema.sql` remains unchanged as a reference; its exact contents form the first migration. Do not apply both files.
@@ -100,3 +103,7 @@ Phase 3 code integration can build on these contracts; live acceptance remains g
 ## Supplied asset follow-up, 22 October 2026
 
 The shared logo now uses `Logo Word.png`; the extra About logo was removed. The Home description and three About slots use the four supplied research illustrations from `public/images/`. The login image area remains reserved. Responsive sizing preserves image proportions and the wordmark remains visible in both themes.
+
+## Login diagnosis follow-up
+
+A read-only check found that the baseline schema has now been applied manually to the connected project, with no migration history registered. The confirmed Auth user had signed in successfully, but `private.administrators` was empty. This explains the access denial; creating an Auth user does not grant administrator membership. No baseline migration should be reapplied. Save/status RPCs were not present in that check; Phase 3 still requires the additive migration and baseline history reconciliation. gerikah explicitly approved the one-user membership change. It was applied to the confirmed Auth account, and `public.is_admin()` returned true under that user's authenticated role and claims in a read-only verification transaction. No records, schemas or other accounts were changed. This verifies database membership; an interactive password login was not performed by the agent.

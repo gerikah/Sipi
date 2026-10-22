@@ -183,3 +183,9 @@ Commit selected rows as drafts in one transaction using commit_import. Record th
 - Records with no abstract show No abstract available. Empty tags are omitted.
 - Use real query results for result and status counts. An empty database is a supported state.
 - Keep pending contact values empty; do not create a clickable fake email address.
+
+Login follow-up: show the supplied wordmark in the navigation bar on `/admin/login`, rather than above its image area. Fill that area with `Hands Exploring a Research Compendium.png`. A signed-in account without active membership receives an explicit approval-needed message. Auth account creation alone does not approve administrator access.
+
+## Phase 3 implementation notes
+
+Record management is connected to real administrator RPCs. Additional schema fields are Group code, Section block, ordered Panel members, Original archive ID, Source data row and Source timestamp without timezone. Academic years, topics and keywords can be managed explicitly; sources must be selected from existing verified entries. Draft, publish, archive and restore actions use saved versions and confirmation dialogs. Conflicts preserve input until the administrator confirms reloading. Student identifiers never enter the form. Bulk actions and public record View are deferred; Import CSV remains disabled.

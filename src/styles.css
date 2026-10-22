@@ -84,6 +84,7 @@ svg { flex: 0 0 24px; }
 .public-nav a:hover, .admin-nav a:hover { text-decoration: underline; }
 a[aria-current='page'], a[aria-current='location'] { background: var(--surface); text-decoration: underline; }
 .public-header > .theme-toggle { position: absolute; right: 0; }
+.login-header > .logo { position: absolute; left: 0; }
 .theme-toggle { background: transparent; }
 .mobile-menu { display: none; }
 .logo { display: inline-flex; align-items: center; gap: var(--space-1); flex: 0 0 auto; color: var(--text); text-decoration: none; }
@@ -160,6 +161,8 @@ a[aria-current='page'], a[aria-current='location'] { background: var(--surface);
 .status-tabs button { border-color: transparent; background: transparent; border-radius: 32px; }
 .status-tabs button[aria-pressed='true'] { background: var(--text); color: var(--bg); }
 .table-scroll { overflow: auto; }
+.row-actions { display: flex; flex-wrap: wrap; gap: var(--space-1); min-width: 160px; }
+.classification-list { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 table { width: 100%; border-collapse: collapse; text-align: left; min-width: 896px; }
 th, td { padding: var(--space-3); vertical-align: top; overflow-wrap: anywhere; }
 th { font-weight: 600; border-bottom: 1px solid var(--border); overflow-wrap: normal; }
@@ -217,6 +220,7 @@ dialog::backdrop { background: rgb(22 20 21 / 65%); }
   h1, .home-intro h1 { font-size: 32px; line-height: 40px; }
   .public-header { justify-content: space-between; flex-wrap: wrap; padding-block: var(--space-2); gap: var(--space-2); }
   .public-header > .theme-toggle { position: static; }
+  .login-header > .logo { position: static; }
   .mobile-menu { display: inline-flex; }
   .public-nav { display: none; order: 3; flex-basis: 100%; }
   .public-nav.open { display: flex; gap: var(--space-1); }

@@ -118,4 +118,34 @@ test('migrations, role permissions, lifecycle and transaction integrity', async 
     await denied(()=>status(restored.id,'published',restored.version),'42501')
     assert.equal((await as('authenticated',admin,'select * from public.theses')).rows.length,0)
   })
+  await t.test('management reads and classification writes reject unapproved/disabled users; catalog edits detect conflicts', async () => {
+    await db.query('update private.administrators set active=true where user_id=$1',[admin])
+    for (const [role,user] of [['anon',null],['authenticated',ordinary],['authenticated',disabled]]) {
+      for (const query of ["select public.admin_records()", `select public.admin_record('${draft.id}')`, "select public.save_classification('topic','Denied')"]) await denied(() => as(role,user,query),'42501')
+    }
+    const detail = (await as('authenticated',admin,'select public.admin_record($1) as doc',[draft.id])).rows[0].doc
+    assert.equal(detail.authors[0].full_name,'Fixture B')
+    assert.equal(JSON.stringify(detail).includes('student_number'),false)
+    assert.equal(JSON.stringify(detail).includes('PRIVATE-TEST-ONLY'),false)
+    assert.equal((await as('authenticated',admin,"select public.admin_records(q=>'fixture b',year_from=>2000,year_to=>2000) as doc")).rows[0].doc.total,1)
+    assert.equal((await as('authenticated',admin,"select public.admin_records(record_status=>'published') as doc")).rows[0].doc.total,0)
+    await db.exec("insert into public.theses(title) select 'Pagination test only ' || n from generate_series(1,26) n")
+    const first=(await as('authenticated',admin,"select public.admin_records(q=>'Pagination test only',sort=>'title') as doc")).rows[0].doc
+    const second=(await as('authenticated',admin,"select public.admin_records(q=>'Pagination test only',sort=>'title',page=>2) as doc")).rows[0].doc
+    assert.equal(first.total,26); assert.equal(first.items.length,24); assert.equal(second.items.length,2)
+    assert.equal(new Set([...first.items,...second.items].map(x=>x.id)).size,26)
+    await denied(()=>as('authenticated',admin,'select public.admin_records(page=>0)'),'22023')
+    const created=(await as('authenticated',admin,"select public.save_classification('topic','Unique test topic') as id")).rows[0].id
+    await as('authenticated',admin,"select public.save_classification('topic','Renamed test topic',$1,'Unique test topic')",[created])
+    await denied(()=>as('authenticated',admin,"select public.save_classification('topic','Overwrite',$1,'Unique test topic')",[created]),'40001')
+    await denied(()=>as('authenticated',admin,"select public.save_classification('academic_year','2001-2003')"),'22023')
+    await denied(()=>as('authenticated',admin,"select public.save_classification('source','Invented source')"),'22023')
+    const large = await save({source_id:source,source_archive_id:'9223372036854775807'})
+    const largeDoc=(await as('authenticated',admin,'select public.admin_record($1) as doc',[large.id])).rows[0].doc
+    assert.equal(largeDoc.source_archive_id,'9223372036854775807')
+    assert.equal(typeof largeDoc.repository_code,'string')
+    await denied(()=>save({source_id:source,source_archive_id:'9223372036854775808'}),'22003')
+    await db.query('update private.administrators set active=false where user_id=$1',[admin])
+    await denied(()=>as('authenticated',admin,'select public.admin_records()'),'42501')
+  })
 })
