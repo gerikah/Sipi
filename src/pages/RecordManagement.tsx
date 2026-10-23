@@ -24,7 +24,7 @@ export function RecordManagement() {
     const current = new URLSearchParams(query)
     const year = (key: string) => current.get(key) ? Number(current.get(key)) : null
     rpc<Result>('admin_records', { q: current.get('q') || '', record_status: status, year_from: year('year_from'), year_to: year('year_to'),
-      topic_id: current.get('topic_id') || null, sort: current.get('sort') || 'newest', page }).then(data => {
+      topic_id: null, sort: current.get('sort') || 'newest', page }).then(data => {
       if (active) { setResult({ query, data }); setError('') }
     }).catch(cause => { if (active) { setResult(null); setError(explain(cause)) } })
     return () => { active = false }

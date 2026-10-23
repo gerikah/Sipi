@@ -274,6 +274,8 @@ dialog::backdrop { background: rgb(22 20 21 / 65%); }
 .abstract-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .abstract-preview { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
 .record-body { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; width: 100%; }
+.record-body > .source-panel { grid-column: 1 / -1; }
+.record-body:not(:has(.detail-abstract)) { grid-template-columns: 1fr; }
 .detail-metadata, .detail-institution { background: var(--surface-muted); border-radius: 16px; padding: 24px; overflow-wrap: anywhere; }
 .detail-metadata h2, .detail-institution h2 { font-size: 24px; line-height: 32px; }
 .public-details { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 24px; }

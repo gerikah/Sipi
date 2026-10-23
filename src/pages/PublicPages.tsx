@@ -31,8 +31,7 @@ export function RecordCard({ record }: { record: PublicRecord }) {
   const { search } = useLocation()
   return <article className="record-card"><h2><Link to={`/records/${record.id}${search}`}>{record.title}</Link></h2>
     <div className="record-metadata"><p>{record.authors.join(', ')}</p><p>{record.academicYear}</p></div>
-    <h3>Abstract</h3><p className="abstract-preview">{record.abstract || 'No abstract available.'}</p>
-    {!!(record.topics.length + record.keywords.length) && <ul className="chips">{[...record.topics, ...record.keywords].map((tag, i) => <li key={i}>{tag}</li>)}</ul>}
+    {record.abstract?.trim() && <><h3>Abstract</h3><p className="abstract-preview">{record.abstract}</p></>}
     <Link to={`/records/${record.id}${search}`}>View record</Link>
   </article>
 }
@@ -65,10 +64,9 @@ export function ViewRecord() {
       <section className="record-detail">{error ? <QueryError retry={retry} /> : record === undefined ? <p role="status">Loading record…</p> : !record ? <><h1>Record not found.</h1><p>This record is not available in the public repository.</p><Link className="button" to={`/records${search}`}>Search records</Link></> : <>
         <h1>{record.title}</h1><button onClick={async () => { try { await navigator.clipboard.writeText(shareUrl); setCopied('Link copied.') } catch { setCopied('Copy the link from the field below.') } }}>Copy record link</button>{copied && <p role="status">{copied}</p>}{copied.startsWith('Copy') && <label>Record link<input readOnly value={shareUrl} onFocus={e => e.target.select()} /></label>}
         <div className="record-body">
-          <section className="detail-abstract stack"><h2>Abstract</h2><p className="abstract-text">{record.abstract || 'No abstract available.'}</p>{!!(record.topics.length + record.keywords.length) && <ul className="chips">{[...record.topics,...record.keywords].map((tag,i) => <li key={i}>{tag}</li>)}</ul>}</section>
-          <aside className="detail-metadata"><h2>Record details</h2><dl className="public-details"><dt>Authors</dt><dd>{record.authors.join(', ')}</dd><dt>Academic year</dt><dd>{record.academicYear}</dd>{record.advisers.length > 0 && <><dt>Advisers</dt><dd>{record.advisers.join(', ')}</dd></>}<dt>Repository code</dt><dd>{record.repository_code}</dd>{record.group_code && <><dt>Group code</dt><dd>{record.group_code}</dd></>}{record.section_block && <><dt>Section block</dt><dd>{record.section_block}</dd></>}{record.panel_members.length > 0 && <><dt>Panel members</dt><dd>{record.panel_members.join(', ')}</dd></>}</dl></aside>
-          <section className="source-panel stack"><h2>Source</h2><p>{record.source_name}</p>{record.source_row_number && <p>Source data row: {record.source_row_number}</p>}{record.source_archive_id && <p>Original archive ID: {record.source_archive_id}</p>}{record.source_created_at && <p>Source timestamp: {record.source_created_at.replace('T', ' ')} (timezone not specified)</p>}</section>
-          <aside className="detail-institution stack"><h2>Department</h2><p>{record.department}</p><p>{record.campus}</p></aside>
+          {record.abstract?.trim() && <section className="detail-abstract stack"><h2>Abstract</h2><p className="abstract-text">{record.abstract}</p></section>}
+          <aside className="detail-metadata"><h2>Record details</h2><dl className="public-details"><dt>Authors</dt><dd>{record.authors.join(', ')}</dd><dt>Academic year</dt><dd>{record.academicYear}</dd>{record.advisers.length > 0 && <><dt>Main adviser</dt><dd>{record.advisers.join(', ')}</dd></>}{record.group_code?.trim() && <><dt>Group code</dt><dd>{record.group_code}</dd></>}{record.section_block?.trim() && <><dt>Section/block</dt><dd>{record.section_block}</dd></>}{record.panel_members.length > 0 && <><dt>Final panel members</dt><dd>{record.panel_members.join(', ')}</dd></>}</dl></aside>
+          <section className="source-panel stack"><h2>Source</h2><p>{record.source_name}</p>{record.source_archive_id && <p>Original archive ID: {record.source_archive_id}</p>}{record.source_created_at && <p>Source timestamp: {record.source_created_at.replace('T', ' ')} (timezone not specified)</p>}</section>
         </div>
       </>}</section>
     </div>

@@ -10,8 +10,8 @@ export type Thesis = {
   status: Status; version: number; authors: Person[]; advisers: Person[]; panel_members: Person[]; topic_ids: string[]; keyword_ids: string[];
 }
 export type Choice = { id: string; name: string }
-export type Options = { years: Choice[]; sources: Choice[]; topics: Choice[]; keywords: Choice[] }
-export const emptyOptions: Options = { years: [], sources: [], topics: [], keywords: [] }
+export type Options = { years: Choice[]; sources: Choice[] }
+export const emptyOptions: Options = { years: [], sources: [] }
 export class RecordError extends Error { constructor(message: string, public code?: string) { super(message) } }
 export function explain(error: unknown): string {
   const code = (error as { code?: string })?.code
@@ -34,8 +34,8 @@ export async function loadOptions(): Promise<Options> {
   if (!supabase) throw new RecordError('Not configured','PGRST202')
   const results = await Promise.all([
     supabase.from('academic_years').select('id,label').order('start_year', { ascending: false }).limit(1001),
-    ...['sources','topics','keywords'].map(table => supabase!.from(table).select('id,name').order('name').limit(1001)),
+    supabase.from('sources').select('id,name').order('name').limit(1001),
   ])
   for (const result of results) { if (result.error) throw new RecordError(result.error.message,result.error.code); if (result.data!.length >= 1000) throw new Error('Too many choices; catalog pagination is required') }
-  return { years: results[0].data!.map(item => ({ id: item.id, name: 'label' in item ? String(item.label) : '' })), sources: results[1].data as Choice[], topics: results[2].data as Choice[], keywords: results[3].data as Choice[] }
+  return { years: results[0].data!.map(item => ({ id: item.id, name: 'label' in item ? String(item.label) : '' })), sources: results[1].data as Choice[] }
 }

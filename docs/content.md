@@ -33,7 +33,7 @@ The following sections map content to the supplied wireframes. Square brackets n
 | --- | --- |
 | Top navigation | Home  /  About  /  Records. Add a compact theme toggle in the same header. |
 | Centered brand | Sipi logo as supplied. Accessible image label: Sipi home. |
-| Centered search | Screen reader label: Search thesis records (visually hidden). Placeholder: Search by title, author, or keyword. Enter submits to /records. |
+| Centered search | Screen reader label: Search thesis records (visually hidden). Placeholder: Search by title, author, or main adviser. Enter submits to /records. |
 | Lower left heading | Thesis records, easier to find. |
 | Lower left description | Browse thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. |
 | Lower left note panel | Required source note with the three verified academic years. |
@@ -82,7 +82,7 @@ Keep three card columns at desktop, two when space allows and one on mobile. Sup
 | Left stack of cards | Other records from the current result set. Use [Thesis title], [Authors], [Year] and optional tags. Highlight the selected record. Do not label these recommendations. |
 | Right main heading | [Thesis title]. Adjacent icon action: Copy record link; success message: Link copied. |
 | Main text section | Abstract heading and [Abstract]. Missing value: No abstract available. |
-| Right upper inset | Record details: [Authors], [Academic year], [Advisers], [Repository code]. |
+| Right upper inset | Record details: [Authors], [Academic year], [Main adviser], [Repository code]. |
 | Tag row | [Topics] and [Keywords], omitted when absent. |
 | Lower large block | Source: [Compendium label], [Source row or page reference]. Show only references actually present. |
 | Right lower inset | Department: Computer Engineering. Campus: PUP Main Campus, Sta. Mesa, Manila. No document download action in this MVP. |
@@ -134,8 +134,8 @@ Keep the shared horizontal administrator header. Reuse this page for editing; ch
 | Form heading | Add thesis record |
 | Full width first field | Thesis title *; placeholder: Enter thesis title. |
 | First paired row | Left: Authors * with Add author and reorder controls. Right: Academic year * with placeholder YYYY-YYYY. |
-| Second paired row | Left: Advisers, optional repeatable entries. Right: Topics, optional searchable selection. |
-| Third paired row | Left: Keywords, optional multi value input. Right: Compendium source, optional for a draft and required before publishing. |
+| Second paired row | Left: Main adviser, optional ordered entries. Right: Compendium source. |
+| Third paired row | Left: Group code. Right: Section/block. Both are optional source text. |
 | Large lower left field | Abstract, optional; placeholder: Enter the abstract if available. |
 | Lower right panel | Source details: [Compendium label], [Source row or page]. Below: status and automatically assigned Record ID. This panel is not a file uploader. |
 | Lower right primary action | Save draft. Add Review and publish as a secondary action once required data is complete. |
@@ -167,7 +167,7 @@ If sources loaded successfully but none exist, disable the selector and show: â€
 
 The implemented limits are 2 MiB and 200 rows per batch; local measurements reduced the earlier proposed 500-row limit. Measure hosted performance and the real file before importing. Accept UTF 8 CSV and define quoting and multiple author delimiters after reviewing the supplied compendium. Split larger files for the MVP. Do not assume column names or invent missing rows.
 
-Upload step: Choose CSV, Source compendium, [start year] and [end year]. Coverage years may remain unset; publishing a coverage claim requires verification. Map step: match source columns to title, year, authors and optional metadata. Preserve original row references and author order.
+Select CSV step: choose the CSV and an existing compendium source. Do not request coverage years; broader coverage remains unset. Map step: match source columns to title, year, authors and optional metadata. Preserve original row references and author order.
 
 Review step: show row number, status, mapped fields, errors and duplicate warnings. Revalidate staged values on the server. Invalid rows cannot be selected. Review suspected duplicates using normalized title, year and authors; the MVP allows skipping or correcting a duplicate, not a silent merge or overwrite.
 
@@ -194,7 +194,11 @@ Login follow-up: show the supplied wordmark in the navigation bar on `/admin/log
 
 ## Phase 3 implementation notes
 
-Record management is connected to real administrator RPCs. Additional schema fields are Group code, Section block, ordered Panel members, Original archive ID, Source data row and Source timestamp without timezone. Academic years, topics and keywords can be managed explicitly; sources must be selected from existing verified entries. Draft, publish, archive and restore actions use saved versions and confirmation dialogs. Conflicts preserve input until the administrator confirms reloading. Student identifiers never enter the form. Bulk actions remain deferred. Phase 4 now enables public record View and Phase 5 connects Import CSV; see phase-4-5-review.md.
+Record management is connected to real administrator RPCs. Additional schema fields are Group code, Section/block, ordered Final panel members, Original archive ID, Source data row and Source timestamp without timezone. Academic years can be added explicitly; topic/keyword controls are removed and stored associations are preserved; sources must be selected from existing verified entries. Draft, publish, archive and restore actions use saved versions and confirmation dialogs. Conflicts preserve input until the administrator confirms reloading. Student identifiers never enter the form. Bulk actions remain deferred. Phase 4 now enables public record View and Phase 5 connects Import CSV; see phase-4-5-review.md.
 
 
 Current discovery/import behavior, limits, missing-file verification and deployment gates are documented in [Phase 4 and 5 review](phase-4-5-review.md).
+
+## Source-column revision, 23 October 2026
+
+The exact labels and current field scope in [Compendium column review](source-column-review.md) supersede earlier topic/keyword and missing-abstract copy above. Remove topic/keyword controls, filters and public tags. Public pages omit empty optional fields, including Abstract, and never show student numbers. The source is CPE Department Compendium; source selection is provenance, not a CSV column. No generated summaries or extracted classifications are shown.

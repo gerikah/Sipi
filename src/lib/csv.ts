@@ -3,9 +3,9 @@ export const MAX_CSV_ROWS = 200
 export type Csv = { headers: string[]; rows: string[][] }
 export const columns = {
   title: ['Thesis title', 'thesis_title'], academic_year: ['Academic year', 'batch_year'], authors: ['Authors', 'author_name'],
-  advisers: ['Advisers', 'main_adviser'], panel_members: ['Panel members', 'final_panel_members'], abstract: ['Abstract', 'abstract'],
-  group_code: ['Group code', 'group_code'], section_block: ['Section block', 'section_block'], source_archive_id: ['Original archive ID', 'archive_id'],
-  source_created_at: ['Source timestamp', 'created_at'], student_number: ['Student number (private; nonempty rows require separate review)', 'student_number'],
+  advisers: ['Main adviser', 'main_adviser'], panel_members: ['Final panel members', 'final_panel_members'], abstract: ['Abstract', 'abstract'],
+  group_code: ['Group code', 'group_code'], section_block: ['Section/block', 'section_block'], source_archive_id: ['Original archive ID', 'archive_id'],
+  source_created_at: ['Source timestamp', 'created_at'], student_number: ['Student numbers (private)', 'student_number'],
 } as const
 export type Field = keyof typeof columns
 export type Mapping = Record<Field, string>
@@ -44,6 +44,11 @@ export function parseCsv(text: string): Csv {
 export function proposedMapping(headers: string[]): Mapping {
   return Object.fromEntries(Object.entries(columns).map(([key, [, name]]) => [key, headers.find(h => h.toLowerCase() === name) || ''])) as Mapping
 }
+export function validateSourceColumns(csv: Csv) {
+  const allowed: string[] = Object.values(columns).map(([, header]) => header)
+  const unknown = csv.headers.filter(header => !allowed.includes(header.toLowerCase()))
+  if (unknown.length) throw new Error(`Unsupported columns: ${unknown.join(', ')}. Use only the 11 compendium source columns.`)
+}
 const absent = (value: string | undefined) => !value?.trim() || value.trim().toUpperCase() === 'NULL' ? null : value.trim()
 function names(value: string | null, separator: Separator) {
   if (!value || value.toLowerCase() === 'no record' || separator === 'review') return []
@@ -54,6 +59,8 @@ export function mapRows(csv: Csv, mapping: Mapping, separators: Record<'authors'
     const raw = Object.fromEntries([...csv.headers.map((h, i) => [h, cells[i] || '']), ...cells.slice(csv.headers.length).map((value, i) => [`__extra_column_${i + csv.headers.length + 1}`, value])])
     const values = Object.fromEntries(Object.keys(columns).map(key => [key, absent(raw[mapping[key as Field]])])) as Record<Field, string | null>
     const payload: Payload = { ...values, authors: names(values.authors, separators.authors), advisers: names(values.advisers, separators.advisers), panel_members: names(values.panel_members, separators.panel_members) }
+    // Preserve supplied abstract text, including its line breaks and spacing.
+    if (values.abstract !== null) payload.abstract = raw[mapping.abstract]
     payload.academic_year = payload.academic_year?.replace(/[–—]/g, '-') || null
     return { raw, payload, errors: cells.length !== csv.headers.length ? [`row: expected ${csv.headers.length} cells, found ${cells.length}; correct the CSV`] : [] }
   })
@@ -71,6 +78,6 @@ export function validateImport(row: ImportInput): string[] {
     const date = m ? new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`) : null
     if (!m || !date || Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 19) !== `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}`) errors.push('source_created_at: use a valid YYYY-MM-DD HH:mm:ss without timezone')
   }
-  if (p.student_number) errors.push('student_number: exclude this row until private identity mapping is reviewed')
+  if (p.student_number || Object.entries(row.raw).some(([key, value]) => key.toLowerCase() === 'student_number' && absent(value))) errors.push('student_number: exclude this row until private identity mapping is verified; no author assignment is inferred')
   return errors
 }

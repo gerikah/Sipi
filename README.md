@@ -65,3 +65,5 @@ No frontend site was deployed. gerikah authorized the connected development data
 Phase 1 layouts and Phase 2 administrator access are in place. Phase 3 record management is implemented, verified locally and configured in the authorized development database. See [Phase 3 review](docs/phase-3-review.md) for migration history, checks, source setup and remaining full-stack acceptance limits.
 
 The supplied mapping identifies academic years 2015-2016, 2018-2019 and 2019-2020; this is not continuous or full-compendium coverage. No source, academic-year or thesis rows are seeded. The separate development-plan document and CSV file are not present in this checkout. Phases 4 and 5 now implement public discovery and reviewed CSV import locally. The new migrations are not applied remotely, and actual CSV mapping, source setup, cleanup scheduling and hosted acceptance remain pending. See [discovery and import instructions](docs/phase-4-5-review.md). PDFs, analytics and student accounts remain outside the MVP.
+
+The current source-column scope, verified CSV inspection and pending additive migration are documented in [Compendium column review](docs/source-column-review.md).

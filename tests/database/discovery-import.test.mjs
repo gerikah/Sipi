@@ -27,6 +27,29 @@ test('public discovery and transactional imports in disposable PostgreSQL', asyn
   const get = (id, user = admin) => as('select public.get_import($1) doc', [id], user)
   const count = async table => (await db.query(`select count(*)::int n from ${table}`)).rows[0].n
   let first, importedId
+  await t.test('source-only drafts publish with optional metadata absent, and unmapped student numbers remain blocked', async () => {
+    const minimal = row('Isolated minimal source', '9007199254740993', { advisers: [], panel_members: [], group_code: null, section_block: null, source_created_at: null, abstract: null })
+    const blocked = row('Isolated unmapped identifier', '90'); blocked.raw.student_number = 'PRIVATE-UNMAPPED-FIXTURE'
+    const batch = await stage([minimal, blocked])
+    assert.match(batch.rows[1].errors.join(), /student_number/)
+    await assert.rejects(() => review(batch.id, [2]), { code: '22023' })
+    await review(batch.id, [1]); const summary = await commit(batch.id); const id = summary.rows[0].thesis_id
+    assert.equal(await count('public.thesis_topics'), 0); assert.equal(await count('public.thesis_keywords'), 0)
+    await as("select public.set_record_status($1,'published',1) doc", [id])
+    const doc = await as('select public.public_record($1) doc', [id], null, 'anon')
+    assert.equal(doc.source_archive_id, '9007199254740993')
+    assert.equal(doc.abstract, null); assert.deepEqual(doc.advisers, []); assert.deepEqual(doc.panel_members, [])
+    for (const key of ['topics', 'keywords', 'student_number', 'created_at', 'updated_at']) assert.ok(!(key in doc))
+    await db.exec("insert into public.topics(name) values('Legacy classification'); insert into public.keywords(name) values('LegacyOnlySearchToken')")
+    await db.query('insert into public.thesis_topics select $1,id from public.topics', [id])
+    await db.query('insert into public.thesis_keywords select $1,id from public.keywords', [id])
+    const edited = await as('select public.save_record($1,2) doc', [{ id, title: 'Isolated minimal edited source' }])
+    assert.equal(await count('public.thesis_topics'), 1); assert.equal(await count('public.thesis_keywords'), 1)
+    assert.equal((await as("select public.search_records(q=>'LegacyOnlySearchToken') doc", [], null, 'anon')).total, 0)
+    assert.equal((await as("select public.admin_records(q=>'LegacyOnlySearchToken') doc")).total, 0)
+    assert.equal((await as("select public.search_records(topic_id=>'00000000-0000-4000-8000-000000000099') doc", [], null, 'anon')).total, 1)
+    await as("select public.set_record_status($1,'archived',$2) doc", [id, edited.version])
+  })
   await t.test('staging is owner-only, validates fields, preserves provenance and commits ordered drafts once', async () => {
     const id = crypto.randomUUID(), inputs = [row('Isolated Alpha research', '9223372036854775807'), row('Invalid year', '2', { academic_year: '2001-2003' }), row('Private identifier', '3', { student_number: 'PRIVATE-TEST-ONLY' })]
     first = await stage(inputs, id)
@@ -46,7 +69,7 @@ test('public discovery and transactional imports in disposable PostgreSQL', asyn
     await review(id, [1]); first = await commit(id); importedId = first.rows[0].thesis_id
     assert.equal(first.imported, 1); assert.equal(first.skipped, 2); assert.equal(first.failed, 0)
     assert.deepEqual(await commit(id), first)
-    assert.equal(await count('public.theses'), 1)
+    assert.equal(await count('public.theses'), 2)
     const doc = await as('select public.admin_record($1) doc', [importedId])
     assert.equal(doc.status, 'draft'); assert.equal(doc.source_archive_id, '9223372036854775807'); assert.equal(doc.group_code, '001')
     assert.equal(doc.source_created_at, '2026-01-02T03:04:05')

@@ -45,6 +45,10 @@ Import CSV, Help, classification editing, record review and confirmations are di
 
 Later scope: PDFs and downloads, student accounts and submissions, faculty/staff roles, advanced analytics and AI recommendations.
 
+## Current compendium content scope
+
+Gerikah's 23 October 2026 revision limits visible thesis content to the 11 verified CSV columns and labels in `docs/source-column-review.md`. Remove topic/keyword inputs, filters and public tags; preserve their stored tables and associations. Never extract tags or summaries from abstracts. Hide empty optional public details. Source selection is provenance, and system fields remain internal. The supplied CSV has now been inspected locally; author row 119 and some main adviser punctuation require manual boundary review.
+
 ## Design and content requirements
 
 - Preserve gerikah's wireframe structure; do not redesign the navigation or replace the form with a narrow drawer.
@@ -128,7 +132,7 @@ Exit: visitors and unapproved authenticated users fail direct write requests and
 
 ### Phase 3 Record management
 
-Connect the table, metadata form, ordered authors, draft save, review, publishing, archive and restore. Add classification dialogs, unsaved edit protection and version conflicts. Keep Import CSV unavailable until implemented.
+Connect the table, metadata form, ordered authors, draft save, review, publishing, archive and restore. Add academic-year dialogs, unsaved edit protection and version conflicts. Keep Import CSV unavailable until implemented.
 
 Exit: the full record lifecycle works and relationships and audit history remain consistent.
 
@@ -164,4 +168,4 @@ Report what changed, what was verified and any remaining dependency, such as the
 
 ## Current implementation tracking
 
-See `docs/phase-4-5-review.md` for locally implemented public discovery and CSV importing, pending migrations and release gates. The actual CSV is absent from this checkout and available attachments, so mapping and name separators still require verification against the real file. Importing never publishes records. Do not treat the feature implementation as authorization to import remote content.
+See `docs/phase-4-5-review.md` for locally implemented public discovery and CSV importing, pending migrations and release gates. The ignored CSV is now present and its headers/values were inspected; see `docs/source-column-review.md` for the verified mapping, ambiguous name boundaries and pending additive migration. Importing never publishes records. Do not treat the feature implementation as authorization to import remote content.

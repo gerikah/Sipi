@@ -1,6 +1,23 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseCsv, mapRows, proposedMapping, validateImport, MAX_CSV_BYTES } from '../../src/lib/csv.ts'
+import { parseCsv, mapRows, proposedMapping, validateImport, validateSourceColumns, MAX_CSV_BYTES } from '../../src/lib/csv.ts'
+
+test('only source columns are mapped, original text and bigint strings survive, and identifiers cannot be unmapped to bypass review', () => {
+  const csv = parseCsv('archive_id,thesis_title,group_code,batch_year,section_block,author_name,student_number,main_adviser,final_panel_members,abstract,created_at\n9223372036854775807,Isolated source fixture,001,2000-2001,A,"Name Y, Family, Another Person",NULL,"Adviser H, Family",NULL,"  Source text\nunchanged.  ",2026-05-13 16:40:28')
+  assert.doesNotThrow(() => validateSourceColumns(csv))
+  const mapping = proposedMapping(csv.headers)
+  const [row] = mapRows(csv, mapping, { authors: 'review', advisers: 'review', panel_members: 'review' })
+  assert.equal(row.payload.source_archive_id, '9223372036854775807')
+  assert.equal(row.payload.abstract, '  Source text\nunchanged.  ')
+  assert.equal(row.payload.group_code, '001')
+  assert.equal(row.payload.source_created_at, '2026-05-13 16:40:28')
+  assert.deepEqual(row.payload.authors, []); assert.deepEqual(row.payload.advisers, [])
+  assert.equal(row.raw.author_name, 'Name Y, Family, Another Person')
+  assert.equal(row.payload.student_number, null)
+  const [unmapped] = mapRows({ ...csv, rows: [csv.rows[0].map((v,i) => i === 6 ? 'PRIVATE-FIXTURE' : v)] }, { ...mapping, student_number: '' }, { authors: 'single', advisers: 'single', panel_members: 'single' })
+  assert.match(validateImport(unmapped).join(), /student_number.*verified/)
+  assert.throws(() => validateSourceColumns(parseCsv('thesis_title,topics\nFixture,Generated')), /Unsupported columns: topics/)
+})
 
 test('CSV quoting, BOM, line endings, escaped quotes and blank values preserve cells', () => {
   const csv = parseCsv('\uFEFFthesis_title,batch_year,author_name,abstract\r\n"Quoted, title",2000-2001,"Family, Given","Line one\r\nLine ""two"""\r\n')

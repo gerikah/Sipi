@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useBlocker } from 'react-router-dom'
 import { Dialog } from './Shared'
-import { columns, mapRows, MAX_CSV_BYTES, parseCsv, proposedMapping, validateImport, type Csv, type Field, type ImportInput, type Mapping, type Payload, type Separator } from '../lib/csv'
+import { columns, mapRows, MAX_CSV_BYTES, parseCsv, proposedMapping, validateImport, validateSourceColumns, type Csv, type Field, type ImportInput, type Mapping, type Payload, type Separator } from '../lib/csv'
 import { explain, loadOptions, rpc, type Choice } from '../lib/records'
 
 type Duplicate = { kind: string; reason: string; same_year: boolean; same_authors: boolean; row_number?: number; record_id?: string }
@@ -72,6 +72,7 @@ export function ImportDialog({ onClose, onComplete }: { onClose: () => void; onC
         try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes) }
         catch { throw new Error('Save the file as UTF-8 CSV and select it again.') }
         const parsed = parseCsv(text)
+        validateSourceColumns(parsed)
         const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(n => n.toString(16).padStart(2, '0')).join('')
         if (!mounted.current) return
         setCsv(parsed); setHash(digest); setMapping(proposedMapping(parsed.headers))
@@ -128,10 +129,11 @@ export function ImportDialog({ onClose, onComplete }: { onClose: () => void; onC
         {!!recent.length && <section><h3>Recent imports</h3><ul>{recent.map(item => <li key={item.id}><button disabled={pending} onClick={() => { void run(async () => { const value = await rpc<Batch>('get_import', { batch_id: item.id }); if (mounted.current) adopt(value) }) }}>{item.filename} — {item.status}</button></li>)}</ul></section>}
       </>}
       {step === 1 && csv && mapping && <>
-        <p>These suggested columns follow the documented mapping. The actual compendium file and name separators have not been verified in this checkout. Confirm each choice against your file.</p>
+        <p>The 11 source headers were verified in cpe_thesis_repository.csv. Check each mapping against your selected file. CPE Department Compendium is the verified source name; its selection records provenance and is not a CSV column.</p>
         <div className="field-pair">{(Object.keys(columns) as Field[]).map(key => <label key={key}>{columns[key][0]}<select disabled={pending} value={mapping[key]} onChange={e => setMapping({ ...mapping, [key]: e.target.value })}><option value="">Not mapped</option>{csv.headers.map(h => <option key={h}>{h}</option>)}</select></label>)}</div>
-        {nameFields.map(key => <label key={key}>How are {columns[key][0].toLowerCase()} separated?<select value={separators[key]} onChange={e => setSeparators({ ...separators, [key]: e.target.value as Separator })}><option value="review">Enter reviewed names on each row</option><option value="single">One person per field (verified)</option><option value="comma">Commas (verified)</option><option value="semicolon">Semicolons (verified)</option><option value="newline">Line breaks (verified)</option></select></label>)}
-        <p>Choose a separator only after checking names and punctuation. Manual review starts with empty name lists. Student numbers are never added to public metadata.</p>
+        {nameFields.map(key => <label key={key}>Name format: {columns[key][0]}<select value={separators[key]} onChange={e => setSeparators({ ...separators, [key]: e.target.value as Separator })}><option value="review">Enter reviewed names on each row</option><option value="single">One person per field (verified)</option><option value="comma">Commas (verified)</option><option value="semicolon">Semicolons (verified)</option><option value="newline">Line breaks (verified)</option></select></label>)}
+        <p>Authors and main adviser values contain commas, including ambiguous punctuation within names. Line breaks can also occur inside a field. Manual review starts with empty name lists: enter one verified person per line in source order, without rewriting the source text. Select a separator only after checking every affected row.</p>
+        <p>Student numbers (private): nonempty values require a verified author mapping before identifier storage. Those rows are blocked; Sipi never guesses the assignment. Final panel members may remain empty.</p>
         <div className="actions"><button onClick={() => setStep(0)}>Back</button><button disabled={!mapping.title || !mapping.academic_year || !mapping.authors} onClick={() => {
           const key = JSON.stringify({ hash, mapping, separators }); if (mappedKey.current !== key) { setRows(mapRows(csv, mapping, separators)); mappedKey.current = key; setBatch(null) }
           setStep(2)

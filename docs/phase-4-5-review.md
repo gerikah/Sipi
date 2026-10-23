@@ -1,5 +1,7 @@
 # Public discovery and CSV importing
 
+Current scope revision: [Compendium column review](source-column-review.md) records the actual CSV inspection completed on 23 October 2026, exact labels, removed classification controls and the new local `20261023090000_compendium_content_scope.sql` migration. Earlier missing-CSV notes below describe the initial implementation; the file has since been supplied and inspected. Name boundaries still need explicit review where punctuation is ambiguous. This revision makes no remote database changes.
+
 ## Implementation and deployment status
 
 Phase 4 public discovery and the Phase 5 import workflow are implemented locally. Existing React/Vite routes, fonts, colors, horizontal navigation, themes and wireframe structure are preserved. No real compendium data was imported, no remote records were published, and no production changes were made. Nothing was committed or pushed.
@@ -13,7 +15,7 @@ These new migrations have not been applied to hosted Supabase. The Supabase conn
 
 ## Public discovery
 
-Home search opens `/records`. Search, academic-year start range, topic, sort and page live in the URL and survive record opening, refresh and Back. Every record has `/records/:id`; Copy record link omits search parameters for sharing. Clipboard failure exposes a selectable link.
+Home search opens `/records`. Search, academic-year start range, sort and page live in the URL and survive record opening, refresh and Back. Topic/keyword controls are removed under the source-column revision. Every record has `/records/:id`; Copy record link omits search parameters for sharing. Clipboard failure exposes a selectable link.
 
 `search_records(q, year_from, year_to, topic_id, sort, page)` is an invoker function that explicitly restricts results to published theses, including for administrators. Search covers title, abstract, repository code, group code, authors, advisers and keywords. Literal matching avoids wildcard interpretation. Filters precede counts and pagination, with at most 24 records and a final UUID sort key. There is no relevance ranking. `public_record(record_id)` returns only an explicit public projection; unavailable, draft and archived IDs return null. `public_topics()` includes only topics associated with published records.
 
@@ -23,7 +25,7 @@ Student numbers, raw imports, audit logs and administrator membership remain pri
 
 Home/About describe the supplied subset as **2015–2016, 2018–2019 and 2019–2020**, not continuous coverage or a claim that records are already published. Record source labels come from actual selected sources. No broader coverage range is inferred or seeded.
 
-## Mapping: documented, not freshly verified
+## Initial mapping reference (superseded by actual file inspection)
 
 No `.csv` file was found in this checkout (including ignored files) or the available attachment folders. `docs/development-plan.md` is also absent. `docs/database_schema.md` remains the earlier supplied mapping reference, including its reported 142 rows. **Actual headers, representative values, file encoding and name separators remain unverified for this implementation.** Do not treat a suggested column match as evidence that the actual file has been inspected.
 
@@ -79,6 +81,10 @@ All staging/read/review/commit functions recheck active membership and batch own
 `get_import` refreshes unfinished validation/duplicate evidence. Changed evidence invalidates confirmation and excludes the changed row until review. On an uncertain commit response, the interface requires checking the saved batch before retrying. A completed batch is returned as the same summary; an unfinished batch returns to review. `list_imports` exposes only the caller's latest 20 batches. Successful atomic batches have zero failed rows; invalid excluded rows are included in skipped counts and also reported separately. A failed request has no successful partial-import summary.
 
 ## Retention and manual setup
+
+Development source setup, 23 October 2026: gerikah authorized the verified name **CPE Department Compendium**. A trusted server-side administrative request checked the connected development project's `public.sources` table, found no existing sources, and created this one entry. A fresh read verified exactly one case/whitespace-normalized match, ID `fadcc894-c47a-4542-8e64-3188f88bf8ff`. Coverage start/end and notes are null; `coverage_verified` remains false. Department and campus retain the existing schema defaults. No thesis records were imported or published, and no policies or frontend dropdown values were changed.
+
+The existing source-reload browser regression passed: a valid local CSV remains selected while source choices reload, and selecting an available source enables Map columns. This check used isolated fixtures. No signed-in browser surface was accessible for a live administrator UI check. In the connected app, click **Reload sources**, select **CPE Department Compendium**, and keep a valid CSV selected. Broader coverage and the real CSV mapping remain separate verification tasks. This source setup does not establish whether pending import migrations have been applied.
 
 Raw and normalized staged personal data stays private. `private.cleanup_imports()` clears it after 30 days, cancels old unfinished batches and preserves batch IDs, decisions, counts and imported record links for audit/idempotency. Browser roles cannot run cleanup. A trusted daily scheduled job or operator must call it; **no scheduler was installed here, so automatic retention is not configured yet**. This function and its preserved retry behavior are tested locally. Keep private imports and raw CSVs out of application logs, Git, public storage and frontend assets.
 

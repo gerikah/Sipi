@@ -19,7 +19,7 @@ Direct application table writes remain disabled. The second migration implements
 - 70 group codes are literal `NULL`; group codes are identifiers, not quantities.
 - All student numbers are missing: 141 literal `NULL` values and one empty cell.
 - All final panel values are literal `NULL`.
-- The source has no dedicated topic or keyword columns. Some abstracts contain Keywords or Index Terms text; extraction requires review.
+- The source has no dedicated topic or keyword columns. Some abstracts contain Keywords or Index Terms text; preserve that text without extracting classifications.
 - `main_adviser` can contain multiple people, inconsistent spacing, name variants, punctuation errors or the value `No record`. It is not reliably one adviser per thesis.
 - Source `created_at` values are export/database timestamps in 2026 without a timezone. They are not thesis completion dates.
 
@@ -78,7 +78,7 @@ Use an internal UUID for relationships. Keep the source archive ID for provenanc
 
 Normalize outer whitespace and literal missing markers such as `NULL`; treat `No record` as absent adviser information after review. Keep absent optional values null or empty relationships. Do not generate names or create records representing the word NULL.
 
-Commas separate author lists in this export, but all splitting must retain order. Adviser commas are particularly unreliable: one source value uses a comma where a name initial punctuation mark would normally appear. Do not split every adviser comma blindly. Normalize repeated whitespace for matching, but do not merge different initials, spelling variants or honorific variants without review.
+Commas occur in author lists, but row 119 has ambiguous punctuation inside a name. No universal split is verified; manual review must retain order. Adviser commas are particularly unreliable: one source value uses a comma where a name initial punctuation mark would normally appear. Do not split every adviser comma blindly. Normalize repeated whitespace for matching, but do not merge different initials, spelling variants or honorific variants without review.
 
 Keep group codes as text so future leading zeroes survive. Do not require title, person name or group code uniqueness. Enforce `(source_id, source_archive_id)` uniqueness to prevent the same source record being imported twice; possible duplicates across sources still require review.
 
@@ -144,4 +144,8 @@ Phase 3 browser-facing administrator reads represent bigint archive IDs and repo
 
 ## Discovery/import implementation
 
-See [Phase 4 and 5 review](phase-4-5-review.md) for the proposed column mapping (actual CSV absent), six-step import, 2 MiB/200-row limits, private staging/retention, duplicate rules and idempotent atomic commit. Browser SELECT grants now exclude thesis actor IDs; administrator reads use explicit projections. New migrations do not seed sources, years or records. Sources still require trusted configuration.
+See [Phase 4 and 5 review](phase-4-5-review.md) for the earlier implementation and the newer verified mapping in `source-column-review.md`, six-step import, 2 MiB/200-row limits, private staging/retention, duplicate rules and idempotent atomic commit. Browser SELECT grants now exclude thesis actor IDs; administrator reads use explicit projections. New migrations do not seed sources, years or records. Sources still require trusted configuration.
+
+## Source-column revision, 23 October 2026
+
+See [Compendium column review](source-column-review.md) for the actual locally inspected CSV and exact interface labels. New local migration `20261023090000_compendium_content_scope.sql` narrows public documents and search to source content and strengthens student-number review. Historical classification tables, values, associations and migration files remain unchanged. Form saves omit classification keys rather than sending empty lists. No remote migrations or real imports were performed for this revision.

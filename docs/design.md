@@ -140,7 +140,7 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 
 - Preserve the top horizontal navigation, large centered Sipi logo, centered search, lower left text and note, and lower right image.
 - Navigation: Home, About and Records; theme toggle in the same header. Records opens `/records`. About scrolls to `/#about`, below the Home content. Admin Login stays available by its direct URL only.
-- Search label: Search thesis records. Placeholder: Search by title, author, or keyword.
+- Search label: Search thesis records. Placeholder: Search by title, author, or main adviser.
 - Heading: Thesis records, easier to find.
 - Description: Browse thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila.
 - Use the required source note in the lower left panel. Lower right: `[Approved department or campus image]`, empty until supplied.
@@ -149,8 +149,8 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 ### 2 Searches Card Page
 
 - Preserve Sipi logo, wide search and two rounded toolbar controls: Filter and Sort.
-- Filter opens a popover or mobile sheet for academic year range and topic. Options come from published data. Sort options: Newest year, Oldest year and Title A to Z.
-- Cards: `[Thesis title]`, `[Authors]`, `[Academic year]`, `[Abstract excerpt]`, `[Topics]`, `[Keywords]`. Use the inset block for metadata rather than a mandatory picture.
+- Filter opens a popover or mobile sheet for academic year range. Topic/keyword controls are removed. Sort options: Newest year, Oldest year and Title A to Z.
+- Cards: `[Thesis title]`, `[Authors]`, `[Academic year]`, `[Supplied abstract text when present]`. Use the inset block for metadata rather than a mandatory picture.
 - Use three columns when wide, two at medium widths and one on mobile. Cards have equal padding; avoid clipping important author information.
 - Add a real result count, clear filters and pagination without changing the overall grid structure.
 - Title links open `/records/:id`. Preserve query, filters, sort and page for Back navigation.
@@ -159,9 +159,9 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 
 - Preserve the toolbar, left stack of supporting record cards and wider right selected record panel.
 - Left cards show other records from the current search, not an invented recommendation feed.
-- Main panel: `[Thesis title]`, Copy record link, Abstract with `[Abstract]`, optional topic and keyword chips.
-- Right upper inset: Record details with `[Authors]`, `[Academic year]`, `[Advisers]`, `[Repository code]`.
-- Lower large block: Source with `[Compendium label]` and `[Source row or page reference]` when present. Right lower inset: department and campus.
+- Main panel: `[Thesis title]`, Copy record link, Abstract with `[Abstract]`, hide the section when the supplied abstract is empty.
+- Right upper inset: Record details with `[Authors]`, `[Academic year]`, `[Main adviser]`, `[Original archive ID when present]`.
+- Lower large block: Source with `[Compendium label]` and `[Source row or page reference]` when present. Show only available source metadata; department/campus remain repository context rather than extra thesis fields.
 - Include Back to results. For direct links use Back to all records.
 - Do not add PDF previews, cover images or download controls to fill blank shapes.
 
@@ -200,8 +200,8 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 - Preserve the shared header, Back to records action, full width first field, paired metadata rows, large lower left abstract and smaller right source panel.
 - Full width: Thesis title.
 - Row 1: Authors with add and reorder controls; Academic year.
-- Row 2: Advisers; Topics.
-- Row 3: Keywords; Compendium source.
+- Row 2: Main adviser; Compendium source.
+- Row 3: Group code; Section/block. Final panel members remain an ordered optional field.
 - Lower left: Abstract. Lower right: Source details, automatic Record ID and Status.
 - Main action: Save draft. Secondary action: Review and publish opens a review dialog.
 - Reuse the frame for editing. Do not add an upload control where no file is required.
@@ -211,7 +211,7 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 
 - Import CSV is a six step dialog: Select CSV, Map columns, Validate rows, Review duplicates, Confirm rows and Import summary. Do not create another top level page.
 - Show row errors, duplicate warnings and selected row count before commit. Summary shows actual imported draft, skipped and invalid counts.
-- Classification dialogs allow selecting existing values and adding a controlled new value. Prevent accidental duplicate names.
+- Keep the academic-year dialog. Topic/keyword inputs and dialogs are no longer in the interface; preserve their stored data.
 - Publishing and archiving show confirmation and specific error messages.
 - Record review shows entered content, not fabricated data.
 - Access denied and record not found are states inside the shared layout.
@@ -244,7 +244,7 @@ Use short transitions only when helpful and respect `prefers-reduced-motion`. Do
 | --- | --- |
 | No imported public records | No thesis records are available yet. |
 | No search matches | No records match your search. Try another keyword or clear the filters. |
-| Missing abstract | No abstract available. |
+| Missing abstract | Hide the optional section. |
 | Optional value missing in details | Not provided. |
 | Empty admin table | No records yet. Add a record or import a CSV to get started. |
 | Query failure | We could not load the records. Try again. |
@@ -280,3 +280,5 @@ Home spacing revision: public search labels and the sort label are visually hidd
 
 
 Current discovery/import behavior, limits, missing-file verification and deployment gates are documented in [Phase 4 and 5 review](phase-4-5-review.md).
+
+Current source-column scope and verified labels: [Compendium column review](source-column-review.md).
