@@ -15,7 +15,7 @@ export async function managementDatabase(page: Page) {
   await db.exec(`insert into auth.users values('${admin}'); insert into private.administrators(user_id) values('${admin}');
     insert into public.sources(name) values('Isolated browser test source');
     insert into public.academic_years(start_year,end_year) values(2000,2001);`)
-  const behavior = { failSave: false, failRead: false, delaySave: false, saveCalls: 0, dropSaveResponse: false, failPublicRead: false, dropImportResponse: false, importCalls: 0 }
+  const behavior = { failSave: false, failRead: false, delaySave: false, saveCalls: 0, dropSaveResponse: false, failPublicRead: false, dropImportResponse: false, importCalls: 0, statusCalls: 0, dropStatusResponse: false }
   await page.route('http://127.0.0.1:54321/rest/v1/**', async route => {
     const path = new URL(route.request().url()).pathname.split('/').at(-1)!
     if (path === 'is_admin') { await route.fulfill({ json: true }); return }
@@ -25,6 +25,7 @@ export async function managementDatabase(page: Page) {
       if (behavior.failSave) { await route.fulfill({status:400,json:{code:'23514',message:'Isolated rejected request'}}); return }
     }
     if (path==='commit_import') behavior.importCalls++
+    if (path==='set_record_status') behavior.statusCalls++
     if (['search_records','public_record'].includes(path) && behavior.failPublicRead) { await route.fulfill({status:503,json:{code:'PGRST002',message:'Isolated outage'}}); return }
     if (path==='admin_records' && behavior.failRead) { await route.fulfill({status:503,json:{code:'PGRST002',message:'Isolated outage'}}); return }
     try {
@@ -47,7 +48,7 @@ export async function managementDatabase(page: Page) {
         if (['sources','topics','keywords'].includes(path)) return (await tx.query(`select id,name from public.${path} order by name`)).rows
         throw new Error('Unexpected isolated request')
       })
-      if ((path === 'save_record' && behavior.dropSaveResponse) || (path === 'commit_import' && behavior.dropImportResponse)) await route.abort('failed')
+      if ((path === 'save_record' && behavior.dropSaveResponse) || (path === 'commit_import' && behavior.dropImportResponse) || (path === 'set_record_status' && behavior.dropStatusResponse)) await route.abort('failed')
       else await route.fulfill({json:result})
     } catch (cause) { const error=cause as {code?:string;message:string}; await route.fulfill({status:400,json:{code:error.code || 'TEST_ERROR',message:error.message}}) }
   })

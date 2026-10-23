@@ -1,5 +1,13 @@
 # Public discovery and CSV importing
 
+## Publish selected update, 23 October 2026
+
+Gerikah requested Select all → Publish. Publish selected now takes an explicit selection snapshot, loads the matching records across pages (respecting exclusions), reviews draft counts and current versions, and asks for confirmation. Already-published and archived records are skipped with an explanation. Missing publication fields block confirmation. Each confirmed draft uses the existing `set_record_status` RPC and its expected version, administrator checks, database publication rules and audit logging; no migration or new permission is needed.
+
+This operation is sequential, not atomic across the whole selection. It stops on the first failure and reports confirmed successes. An uncertain response cannot be blindly retried; the administrator must close, reload and review again. Pending requests block Close/Escape, in-app navigation and repeated submission; browser refresh warns. Closing after an attempted operation reloads the table and clears selection. No real records were published during implementation.
+
+Verification uses disposable fixtures for all-page selection with exclusions, cancellation, mixed statuses, publication validation, version conflicts after review, partial success, lost responses, and administrator revocation. Desktop/mobile confirmation layouts and accessibility are checked in both themes. See the tests in `tests/publish-selected.spec.ts`.
+
 ## Administrator selection update, 23 October 2026
 
 Added row checkboxes, Select all on this page, an explicit option to select all matching records across pages, selection counts, mixed checkbox state, and Clear selection. Selection persists across pagination and resets on filters, sorting, reload, changed result totals, read failures, and page unmount. It stays in memory and uses the current filter plus excluded IDs for all-matching mode; no full-record bulk fetch or browser storage is needed. A future bulk write must separately capture and validate record versions and obtain confirmation; this change adds selection only.

@@ -192,7 +192,7 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 - Columns: Select, Record ID, Title, Authors, Year, Status and Actions.
 - Give Title the most width; wrap long titles and authors. Use a contextual menu for actions.
 - Add/Edit opens the form page. Import and Help open dialogs; classification editing uses small dialogs inside the workspace.
-- Archive requires confirmation. Selected rows offer Archive selected, not bulk publish.
+- Archive requires confirmation. Gerikah's 23 October revision adds Publish selected: review the selected draft count and confirm before making them public. Keep existing individual archive actions.
 - Pagination below the table; loading and empty states inside the table region.
 
 ### 7 Admin dashboard add record

@@ -117,7 +117,7 @@ Never display a signup link. Do not invent a support email or promise a password
 | Seven table columns | Select  /  Record ID  /  Title  /  Authors  /  Year  /  Status  /  Actions. |
 | Empty table rows | Leave values blank in the frame. Live empty message: No records yet. Add a record or import a CSV to get started. |
 | Row actions | View, Edit, Publish or Return to draft, Archive or Restore to draft. Contextual actions depend on status; public View only when published. |
-| Selected rows | Show selected count and Archive selected with confirmation. Do not implement bulk publish in the initial release. |
+| Selected rows | Show selected count, Clear selection and Publish selected. Review selected drafts and confirm the count before publishing. Already-published and archived selections remain unchanged. |
 | Below table | Previous  /  [page]  /  Next. Keep the table header visible while scrolling long lists. |
 
 Confirm archive with “Archive this record? It will no longer appear in public searches.” Use Archive and Cancel buttons. Help contains a short editing guide and the compendium source note. Tag management opens from filters or the record form; it does not need another page.
@@ -200,6 +200,8 @@ Record management is connected to real administrator RPCs. Additional schema fie
 Current discovery/import behavior, limits, missing-file verification and deployment gates are documented in [Phase 4 and 5 review](phase-4-5-review.md).
 
 ## Source-column revision, 23 October 2026
+
+Publishing selection revision: Publish selected loads the selected records and their current versions for review, including matches across pages. Missing required details prevent confirmation. The final “Publish [count] records” button makes valid selected drafts public through the existing status function, one record at a time. Show progress and stop on the first failure, explaining confirmed successes and uncertain responses; require reload and fresh review before retrying. Block dismissal and navigation while publishing. This supersedes earlier deferred bulk-publishing notes; bulk archiving remains deferred.
 
 Administrator table selection: each record has a labeled checkbox. “Select all on this page” selects the visible page (up to 24 records); when that page is selected, “Select all [count] matching records” extends selection across pages using the current search, status and academic-year filters. The actual count replaces the bracketed placeholder. Show the selected count, a mixed checkbox for partial page selection, and Clear selection. Keep selection across pages, but clear it when filters, sorting, result totals or reloads change, on a load error, or when leaving the screen. Selection alone does not change record status; existing individual review/confirmation actions remain in place.
 

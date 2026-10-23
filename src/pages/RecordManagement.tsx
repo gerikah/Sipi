@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ImportDialog } from '../components/ImportDialog'
+import { PublishSelectedDialog } from '../components/PublishSelectedDialog'
 import { SearchToolbar } from '../components/SearchToolbar'
 import { RecordStatusDialog, statusLabel } from '../components/RecordStatusDialog'
 import { explain, rpc, type Status, type Thesis } from '../lib/records'
@@ -18,6 +19,7 @@ export function RecordManagement() {
   const [refresh, setRefresh] = useState(0)
   const [message, setMessage] = useState('')
   const [action, setAction] = useState<{ record: Thesis; status: Status } | null>(null)
+  const [publishSelection, setPublishSelection] = useState<{ selection: Selection; filters: Record<string, unknown> } | null>(null)
   const status = statuses.some(([value]) => value === params.get('status')) ? params.get('status')! : 'all'
   const page = Math.trunc(Math.max(1, Math.min(100000, Number(params.get('page')) || 1)))
   useEffect(() => {
@@ -64,6 +66,10 @@ export function RecordManagement() {
         <p role="status" aria-live="polite">{selection.all && !selection.ids.size ? `All ${selectedCount} matching records selected.` : `${selectedCount} ${selectedCount === 1 ? 'record' : 'records'} selected.`}</p>
         {data && data.total > data.items.length && pageSelected && (!selection.all || selection.ids.size > 0) && <button onClick={() => setSelection({ scope: selectionScope, total: data.total, all: true, ids: new Set() })}>Select all {data.total} matching records</button>}
         {selectedCount > 0 && <button onClick={clearSelection}>Clear selection</button>}
+        {selectedCount > 0 && <button className="primary" disabled={!data} onClick={() => setPublishSelection({ selection: { ...selection, ids: new Set(selection.ids) }, filters: {
+          q: params.get('q') || '', record_status: status, year_from: params.get('year_from') ? Number(params.get('year_from')) : null,
+          year_to: params.get('year_to') ? Number(params.get('year_to')) : null, topic_id: null, sort: params.get('sort') || 'newest',
+        } })}>Publish selected</button>}
       </div>
       <div className="table-scroll" role="region" aria-label="Records table, scroll horizontally on small screens" tabIndex={0}><table><caption className="sr-only">Administrator thesis records</caption><thead><tr><th scope="col" className="selection-column">Select</th><th scope="col">Record ID</th><th scope="col" className="title-column">Title</th><th scope="col">Authors</th><th scope="col">Academic year</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead><tbody>
         {data?.items.map(record => <tr key={record.id} className={isSelected(record.id) ? 'record-selected' : undefined}><td className="selection-column"><label className="checkbox-label"><input type="checkbox" checked={isSelected(record.id)} onChange={event => selectRecords([record.id], event.target.checked)} /><span className="sr-only">Select {record.title || 'Untitled draft'} (record {record.repository_code})</span></label></td><td>{record.repository_code}</td><th scope="row">{record.title || 'Untitled draft'}</th><td>{record.authors.map(a => a.full_name).join(', ') || 'Not provided.'}</td><td>{record.academic_year || 'Not provided.'}</td><td>{record.status}</td><td><div className="row-actions">{record.status === "published" && <Link to={`/records/${record.id}`}>View public record</Link>}<Link to={`/admin/records/${record.id}/edit?${query}`}>{record.status === 'archived' ? 'View archived record' : 'Edit'}</Link>{(record.status === 'archived' ? ['draft'] : record.status === 'published' ? ['draft', 'archived'] : ['published', 'archived']).map(value => <button key={value} onClick={() => setAction({ record, status: value as Status })}>{record.status === 'archived' ? 'Restore to draft' : statusLabel(value as Status)}</button>)}</div></td></tr>)}
@@ -73,5 +79,9 @@ export function RecordManagement() {
     <nav className="pagination" aria-label="Pagination"><button disabled={!data || page <= 1} onClick={() => changePage(page - 1)}>Previous</button><span>{data?.total ? `Page ${page} · ${data.total} records` : 'No pages to show'}</span><button disabled={!data || page * 24 >= data.total} onClick={() => changePage(page + 1)}>Next</button></nav>
     {params.get("import") === "1" && <ImportDialog onClose={() => { const next = new URLSearchParams(params); next.delete("import"); setParams(next, { replace: true }) }} onComplete={() => { setResult(null); setRefresh(n => n + 1) }} />}
     {action && <RecordStatusDialog record={action.record} status={action.status} onClose={() => setAction(null)} onSuccess={() => { setMessage('Record status updated.'); setAction(null); setResult(null); setRefresh(n => n + 1) }} />}
+    {publishSelection && <PublishSelectedDialog {...publishSelection} onClose={attempted => {
+      setPublishSelection(null)
+      if (attempted) { setResult(null); setRefresh(n => n + 1) }
+    }} />}
   </section>
 }
