@@ -201,4 +201,6 @@ Current discovery/import behavior, limits, missing-file verification and deploym
 
 ## Source-column revision, 23 October 2026
 
+Administrator table selection: each record has a labeled checkbox. “Select all on this page” selects the visible page (up to 24 records); when that page is selected, “Select all [count] matching records” extends selection across pages using the current search, status and academic-year filters. The actual count replaces the bracketed placeholder. Show the selected count, a mixed checkbox for partial page selection, and Clear selection. Keep selection across pages, but clear it when filters, sorting, result totals or reloads change, on a load error, or when leaving the screen. Selection alone does not change record status; existing individual review/confirmation actions remain in place.
+
 The exact labels and current field scope in [Compendium column review](source-column-review.md) supersede earlier topic/keyword and missing-abstract copy above. Remove topic/keyword controls, filters and public tags. Public pages omit empty optional fields, including Abstract, and never show student numbers. The source is CPE Department Compendium; source selection is provenance, not a CSV column. No generated summaries or extracted classifications are shown.

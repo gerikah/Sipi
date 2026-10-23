@@ -161,6 +161,11 @@ a[aria-current='page'], a[aria-current='location'] { background: var(--surface);
 .status-tabs button { border-color: transparent; background: transparent; border-radius: 32px; }
 .status-tabs button[aria-pressed='true'] { background: var(--text); color: var(--bg); }
 .table-scroll { overflow: auto; }
+.record-selection { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3); padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--border); }
+.record-selection p { margin: 0; }
+.selection-column { width: 80px; }
+.selection-column .checkbox-label { min-width: 48px; justify-content: center; }
+.record-selected { background: var(--surface-muted); }
 .row-actions { display: flex; flex-wrap: wrap; gap: var(--space-1); min-width: 160px; }
 .classification-list { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 table { width: 100%; border-collapse: collapse; text-align: left; min-width: 896px; }

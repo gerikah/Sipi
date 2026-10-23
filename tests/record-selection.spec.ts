@@ -1,0 +1,73 @@
+import { test, expect } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+import { managementDatabase } from './management-db'
+
+test('select a page or all matching records, exclude rows, and clear stale selections', async ({ page }, testInfo) => {
+  const { db, behavior } = await managementDatabase(page)
+  const writes: string[] = []
+  page.on('request', request => { if (/\/(save_record|set_record_status|commit_import)$/.test(request.url())) writes.push(request.url()) })
+  try {
+    await db.exec(`insert into public.theses(title,status)
+      select 'Isolated selection fixture ' || n || ' with a long title to verify wrapping in the administrator records table',
+        case when n=27 then 'archived' else 'draft' end from generate_series(1,27) n;`)
+    await page.goto('/admin/records')
+    const selectPage = page.getByRole('checkbox', { name: 'Select all on this page', exact: true })
+    const rows = page.getByRole('table').getByRole('checkbox')
+    const selection = page.getByRole('group', { name: 'Record selection', exact: true })
+    await expect(rows).toHaveCount(24)
+    await selectPage.focus(); await page.keyboard.press('Space')
+    await expect(selection).toContainText('24 records selected.')
+    await expect(page.locator('tbody input:checked')).toHaveCount(24)
+    await page.getByRole('button', { name: 'Select all 27 matching records', exact: true }).click()
+    await expect(selection).toContainText('All 27 matching records selected.')
+    await page.getByRole('button', { name: 'Next', exact: true }).click()
+    await expect(rows).toHaveCount(3)
+    await expect(page.locator('tbody input:checked')).toHaveCount(3)
+    await rows.first().uncheck()
+    await expect(selection).toContainText('26 records selected.')
+    await expect(selectPage).toBeChecked({ indeterminate: true })
+    await selectPage.check()
+    await expect(selection).toContainText('All 27 matching records selected.')
+    await selectPage.uncheck()
+    await expect(selection).toContainText('24 records selected.')
+    await page.getByRole('button', { name: 'Previous', exact: true }).click()
+    await expect(rows).toHaveCount(24)
+    await expect(selectPage).toBeChecked()
+    await page.getByRole('button', { name: 'Clear selection', exact: true }).click()
+    await expect(selection).toContainText('0 records selected.')
+    await rows.first().check()
+    await expect(selectPage).toBeChecked({ indeterminate: true })
+    for (const theme of ['light', 'dark'] as const) for (const width of [1440, 390]) {
+      await page.emulateMedia({ colorScheme: theme }); await page.setViewportSize({ width, height: 1000 })
+      await selection.scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations).toEqual([])
+      await page.screenshot({ path: testInfo.outputPath(`record-selection-${theme}-${width}.png`) })
+    }
+    await page.getByRole('button', { name: 'Drafts', exact: true }).click()
+    await expect(selection).toContainText('0 records selected.')
+    await selectPage.check()
+    await page.getByRole('button', { name: 'Select all 26 matching records', exact: true }).click()
+    await page.getByRole('searchbox').fill('Isolated selection fixture 26 ')
+    await page.getByRole('searchbox').press('Enter')
+    await expect(rows).toHaveCount(1)
+    await expect(selection).toContainText('0 records selected.')
+    await selectPage.check()
+    await expect(selection).toContainText('1 record selected.')
+    await expect(page.getByRole('button', { name: /Select all \d+ matching/ })).toHaveCount(0)
+    behavior.failRead = true
+    await page.getByRole('button', { name: 'Reload records', exact: true }).click()
+    await expect(page.getByRole('alert')).toBeVisible()
+    await expect(selectPage).toBeDisabled()
+    await expect(selection).toContainText('0 records selected.')
+    behavior.failRead = false
+    await page.getByRole('button', { name: 'Reload records', exact: true }).click()
+    await expect(rows).toHaveCount(1)
+    await expect(rows.first()).not.toBeChecked()
+    await page.getByRole('button', { name: 'Published', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'No records yet.', exact: true })).toBeVisible()
+    await expect(selectPage).toBeDisabled()
+    expect(writes).toEqual([])
+    expect((await db.query<{ n: number }>("select count(*)::int n from public.theses where status='draft'")).rows[0].n).toBe(26)
+  } finally { await db.close() }
+})

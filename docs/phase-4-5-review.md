@@ -1,5 +1,11 @@
 # Public discovery and CSV importing
 
+## Administrator selection update, 23 October 2026
+
+Added row checkboxes, Select all on this page, an explicit option to select all matching records across pages, selection counts, mixed checkbox state, and Clear selection. Selection persists across pagination and resets on filters, sorting, reload, changed result totals, read failures, and page unmount. It stays in memory and uses the current filter plus excluded IDs for all-matching mode; no full-record bulk fetch or browser storage is needed. A future bulk write must separately capture and validate record versions and obtain confirmation; this change adds selection only.
+
+Verified with four focused browser tests covering selection and the existing management lifecycle, including keyboard interaction, long titles, empty/error states, and accessibility checks at 1440px and 390px in both themes. Lint, TypeScript and production build pass; the existing bundle-size warning remains. Tests use disposable local fixtures, and no remote records or statuses were modified.
+
 Latest development update: [CSV import installation repair](import-installation-repair.md). The missing transactional import functions have now been installed and verified in the authorized development database. Older “unapplied” statements below describe the initial delivery. No real records were staged or imported; hosted migration history reconciliation remains a release task.
 
 Current scope revision: [Compendium column review](source-column-review.md) records the actual CSV inspection completed on 23 October 2026, exact labels, removed classification controls and the new local `20261023090000_compendium_content_scope.sql` migration. Earlier missing-CSV notes below describe the initial implementation; the file has since been supplied and inspected. Name boundaries still need explicit review where punctuation is ambiguous. This revision makes no remote database changes.
