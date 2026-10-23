@@ -1,5 +1,7 @@
 # Public discovery and CSV importing
 
+Latest development update: [CSV import installation repair](import-installation-repair.md). The missing transactional import functions have now been installed and verified in the authorized development database. Older “unapplied” statements below describe the initial delivery. No real records were staged or imported; hosted migration history reconciliation remains a release task.
+
 Current scope revision: [Compendium column review](source-column-review.md) records the actual CSV inspection completed on 23 October 2026, exact labels, removed classification controls and the new local `20261023090000_compendium_content_scope.sql` migration. Earlier missing-CSV notes below describe the initial implementation; the file has since been supplied and inspected. Name boundaries still need explicit review where punctuation is ambiguous. This revision makes no remote database changes.
 
 ## Implementation and deployment status

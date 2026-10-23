@@ -1,5 +1,7 @@
 # Compendium column review — 23 October 2026
 
+Database follow-up: gerikah applied the content-scope migration manually. The earlier import installation was missing and has now been repaired in development; see [installation diagnosis and verification](import-installation-repair.md).
+
 This scope supersedes earlier topic/keyword interface requirements. Thesis content is limited to the 11 supplied columns. Source selection is provenance; UUIDs, status, versions, Sipi timestamps, import tracking and audits remain internal system fields.
 
 ## Actual file inspected

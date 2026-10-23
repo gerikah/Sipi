@@ -4,6 +4,38 @@ import { mockAuth } from './auth-fixtures'
 
 const fixture = { name: 'isolated-feedback.csv', mimeType: 'text/csv', buffer: Buffer.from('thesis_title,batch_year,author_name\nIsolated feedback fixture,2000-2001,Isolated author') }
 
+for (const code of ['PGRST202', '42883']) test(`missing import function ${code} explains the repair and retains corrections`, async ({ page }, testInfo) => {
+  await mockAuth(page, true)
+  await page.route('**/rest/v1/sources?*', route => route.fulfill({ json: [{ id: '00000000-0000-4000-8000-000000000005', name: 'Isolated configured source' }] }))
+  await page.route('**/rest/v1/rpc/list_imports', route => route.fulfill({ status: 404, json: { code, message: 'Missing function' } }))
+  await page.route('**/rest/v1/rpc/stage_import', route => route.fulfill({ status: 404, json: { code, message: 'Missing function' } }))
+  await page.goto('/admin/records?import=1')
+  await expect(page.getByRole('alert')).toContainText('CSV importing')
+  await page.getByLabel('CSV file', { exact: true }).setInputFiles(fixture)
+  await page.getByLabel('Compendium source', { exact: true }).selectOption({ label: 'Isolated configured source' })
+  await page.getByRole('button', { name: 'Map columns', exact: true }).click()
+  await page.getByRole('button', { name: 'Validate and preview', exact: true }).click()
+  await page.locator('summary').first().click()
+  const authors = page.getByLabel('Authors — row 1', { exact: true })
+  await authors.fill('Reviewed first\nReviewed second')
+  await page.getByRole('button', { name: 'Check duplicates', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('CSV importing')
+  await expect(page.getByRole('alert')).toContainText('Your selected file and corrections remain in this dialog.')
+  await expect(page.getByRole('alert')).not.toContainText('Record management')
+  if (code === 'PGRST202') for (const theme of ['light', 'dark'] as const) for (const width of [1440, 390]) {
+    await page.emulateMedia({ colorScheme: theme }); await page.setViewportSize({ width, height: 1000 })
+    await page.getByRole('alert').scrollIntoViewIfNeeded()
+    expect(await page.locator('dialog').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
+    expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()).violations).toEqual([])
+    await page.screenshot({ path: testInfo.outputPath(`import-installation-${theme}-${width}.png`), fullPage: true })
+  }
+  await expect(authors).toHaveValue('Reviewed first\nReviewed second')
+  await expect(page.getByRole('status').filter({ hasText: 'CSV ready:' })).toContainText(fixture.name)
+  await page.getByRole('button', { name: 'Close dialog' }).click()
+  await page.getByRole('button', { name: 'Keep reviewing' }).click()
+  await expect(authors).toHaveValue('Reviewed first\nReviewed second')
+})
+
 test('cancelling dismissal retains the selected file and parsed rows without sources', async ({ page }) => {
   await mockAuth(page, true)
   await page.goto('/admin/records?import=1')

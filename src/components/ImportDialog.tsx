@@ -10,6 +10,12 @@ type Batch = { id: string; filename: string; status: string; total: number; impo
 type Recent = { id: string; filename: string; status: string }
 const steps = ['Select CSV', 'Map columns', 'Validate rows', 'Review duplicates', 'Confirm rows', 'Import summary']
 const nameFields = ['authors', 'advisers', 'panel_members'] as const
+function installationError(cause: unknown): string | null {
+  const code = (cause as { code?: string } | null)?.code
+  if (code === 'PGRST202') return 'CSV importing is not configured in this database. Install the missing import functions and refresh the database API. Your selected file and corrections remain in this dialog.'
+  if (code === '42883') return 'A database function needed for CSV importing is missing. Apply the import repair migration. Your selected file and corrections remain in this dialog.'
+  return null
+}
 export function ImportDialog({ onClose, onComplete }: { onClose: () => void; onComplete: () => void }) {
   const [step, setStep] = useState(0); const [sources, setSources] = useState<Choice[]>([]); const [recent, setRecent] = useState<Recent[]>([])
   const [source, setSource] = useState(''); const [filename, setFilename] = useState(''); const [hash, setHash] = useState(''); const [csv, setCsv] = useState<Csv | null>(null)
@@ -32,7 +38,7 @@ export function ImportDialog({ onClose, onComplete }: { onClose: () => void; onC
   }, [sourceReload])
   useEffect(() => {
     let active = true
-    rpc<Recent[]>('list_imports').then(imports => { if (active) setRecent(imports) }).catch(() => { if (active) setError('Recent imports could not be loaded. Close and reopen to try again. Your selected file has not been saved.') })
+    rpc<Recent[]>('list_imports').then(imports => { if (active) setRecent(imports) }).catch(cause => { if (active) setError(installationError(cause) ?? 'Recent imports could not be loaded. Close and reopen to try again. Your selected file has not been saved.') })
     return () => { active = false }
   }, [])
   useEffect(() => {
@@ -46,9 +52,9 @@ export function ImportDialog({ onClose, onComplete }: { onClose: () => void; onC
     try { await task() } catch (cause) {
       if (mounted.current) {
         const failure = cause as { code?: string; message?: string }
-        setError(failure.code === '40001' ? 'Records changed since this batch was reviewed. Reload the batch and review the new duplicate warnings.'
+        setError(installationError(cause) ?? (failure.code === '40001' ? 'Records changed since this batch was reviewed. Reload the batch and review the new duplicate warnings.'
           : failure.message && /^(Row \d+|Review duplicate|Select |No selected|Import limit|This import|Use a new batch)/.test(failure.message) ? failure.message
-          : cause instanceof Error && !('code' in cause) ? cause.message : explain(cause))
+          : cause instanceof Error && !('code' in cause) ? cause.message : explain(cause)))
       }
     }
     finally { lock.current = false; if (mounted.current) setPending(false) }
