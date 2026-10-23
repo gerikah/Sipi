@@ -1,6 +1,6 @@
 # Phase 3 record management
 
-Historical Phase 3 report. Current public discovery and import work is documented in [Phase 4 and 5 review](phase-4-5-review.md); its two new migrations are pending hosted deployment.
+Historical Phase 3 report. See [Phase 4 and 5 review](phase-4-5-review.md) for subsequent feature work and the [Phase 6 release checklist](release-checklist.md) for current hosted verification, migration differences and blockers.
 
 ## Delivered
 

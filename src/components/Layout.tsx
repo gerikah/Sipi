@@ -29,8 +29,9 @@ export function PublicHeader() {
   const [open, setOpen] = useState(false)
   const { pathname, hash } = useLocation()
   const login = pathname === '/admin/login'
-  return <header className="site-header"><div className={`public-header container${login ? ' login-header' : ''}`}>
-    {login && <Logo />}
+  const recordView = /^\/records\/[^/]+$/.test(pathname)
+  return <header className="site-header"><div className={`public-header container${login || recordView ? ' login-header' : ''}`}>
+    {(login || recordView) && <Logo />}
     <button className="mobile-menu" aria-expanded={open} aria-controls="public-navigation" onClick={() => setOpen(!open)}>Menu</button>
     <nav id="public-navigation" className={open ? 'public-nav open' : 'public-nav'} aria-label="Main navigation">
       <Link to="/" aria-current={pathname === '/' && hash !== '#about' ? 'page' : undefined} onClick={() => setOpen(false)}>Home</Link>
@@ -67,6 +68,7 @@ export function Layout() {
   const access = useAuth()
   const { pathname, hash, key } = useLocation()
   const admin = pathname.startsWith('/admin/records') && access.status === 'approved'
+  const recordView = /^\/records\/[^/]+$/.test(pathname)
   useLayoutEffect(() => {
     const header = document.querySelector<HTMLElement>('.site-header')
     if (!header) return
@@ -84,11 +86,11 @@ export function Layout() {
   }, [pathname, hash, key])
   return <><a className="skip-link" href="#main">Skip to content</a>
     {admin ? <AdminHeader key={pathname} /> : <PublicHeader key={pathname} />}
-    <main id="main" tabIndex={-1} className="container"><Outlet /></main>
-    <footer className="site-footer"><div className="container footer-inner">
+    <main id="main" tabIndex={-1} className={`container${recordView ? ' record-view-main' : ''}`}><Outlet /></main>
+    {!recordView && <footer className="site-footer"><div className="container footer-inner">
       <div className="footer-brand"><Logo /><div><p>Computer Engineering</p><p className="muted">PUP Main Campus, Sta. Mesa, Manila</p></div></div>
       <nav className="footer-nav" aria-label="Footer navigation"><Link to="/records">Browse records</Link><Link to="/#about">About Sipi</Link><Link to="/">Back to top</Link></nav>
-    </div></footer>
+    </div></footer>}
   </>
 }
 

@@ -1,5 +1,13 @@
 # Sipi screen content
 
+Neutral-panels follow-up: keep the current wording and ordered names. Place Source in the right column below Record details and Tags in the left column on the same row as Source. On small screens stack Abstract, Record details, Source and Tags. Panel colors are neutral; tag colors remain. Texture, shadows and transitions are visual only and must not reset forms, alter records or hide text.
+
+Reading-layout follow-up (23 October 2026): put the combined source note only in About on the Home page, above the three images; remove its duplicate introduction. Home keeps a short search-focused description. Public cards use content-sized rows with 8px gaps instead of tall fixed slots. Authors and advisers in record details, and authors in supporting results, are ordered lines without added comma separators; preserve punctuation within each reviewed name. Use **Adviser** on public details. Source fields form a compact block. Remove the “Why this grouping?” disclosure; retain the automatic label and explanatory note. Abstract paragraphs preserve all words and punctuation, joining single export line wraps and separating existing blank-line paragraphs and labeled keyword/index sections. Stored text is unchanged.
+
+Latest public UI revision (23 October 2026): hide the visible Search records page heading. Cards show the title link, first author's full name plus “, et al.” when there are additional authors, academic year, adviser(s), and a direct abstract preview. Gerikah explicitly chose full first-author names rather than inferred surnames; preserve all author names on the detail page. Missing fields remain blank. The earlier Abstract label and View record footer link are removed from cards. The latest follow-up adds source tags and an automatic Hardware/Software grouping at the bottom; details explain the evidence. About copy is centered above the three supplied images.
+
+On record details, remove the search toolbar. Put the wordmark at the left of navigation, an arrow beside Back to results, and Copy record link at the right of the same action row outside the panel. Retain clipboard feedback and the manual-link fallback. The page stays fixed; results scroll independently, and the detail panel scrolls only when needed, as confirmed by gerikah. Narrow layouts use Results/Thesis controls. All text, optional source fields and query context remain accessible. These instructions supersede older search-toolbar and scrolling descriptions below.
+
 Use this file for interface copy and field placement. Follow [design.md](design.md) for appearance and [AGENTS.md](../AGENTS.md) for development rules. Derived from the Sipi MVP Architecture and Development Plan version 2.0.
 
 ## Shared content rules
@@ -11,9 +19,9 @@ Use this file for interface copy and field placement. Follow [design.md](design.
 
 ## Required source note
 
-Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The supplied compendium subset covers academic years 2015–2016, 2018–2019, and 2019–2020. These are separate academic years, not continuous coverage. Records appear here after administrator review and publication.
+Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The supplied compendium subset covers academic years 2015-2020. These are separate academic years, not continuous coverage. Records appear here after administrator review and publication.
 
-Place this note on Home and About. These are separate verified academic years in the available subset, not continuous coverage. Broader compendium coverage stays unset. No records have been imported. Contact notes stay omitted until an approved contact is supplied.
+Place this note in About only on the Home page, per gerikah's revised wording. The range describes the supplied subset; the actual represented academic years remain 2015–2016, 2018–2019 and 2019–2020, not continuous coverage. Broader compendium coverage stays unset. Contact notes stay omitted until an approved contact is supplied.
 
 ## Shared navigation
 
@@ -205,4 +213,4 @@ Publishing selection revision: Publish selected loads the selected records and t
 
 Administrator table selection: each record has a labeled checkbox. “Select all on this page” selects the visible page (up to 24 records); when that page is selected, “Select all [count] matching records” extends selection across pages using the current search, status and academic-year filters. The actual count replaces the bracketed placeholder. Show the selected count, a mixed checkbox for partial page selection, and Clear selection. Keep selection across pages, but clear it when filters, sorting, result totals or reloads change, on a load error, or when leaving the screen. Selection alone does not change record status; existing individual review/confirmation actions remain in place.
 
-The exact labels and current field scope in [Compendium column review](source-column-review.md) supersede earlier topic/keyword and missing-abstract copy above. Remove topic/keyword controls, filters and public tags. Public pages omit empty optional fields, including Abstract, and never show student numbers. The source is CPE Department Compendium; source selection is provenance, not a CSV column. No generated summaries or extracted classifications are shown.
+The exact labels and current field scope in [Compendium column review](source-column-review.md) supersede earlier topic/keyword and missing-abstract copy above. Topic/keyword editing controls remain removed. The later request documented in [Source tags review](source-tags-review.md) restores source-derived discovery tags and filters. Public pages omit empty optional fields, including Abstract, and never show student numbers. The source is CPE Department Compendium; source selection is provenance, not a CSV column. No generated summaries are shown. Automatic Hardware/Software grouping is separately labeled and explained, not stored as verified source content.

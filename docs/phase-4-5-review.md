@@ -1,5 +1,29 @@
 # Public discovery and CSV importing
 
+Historical feature report. The [Phase 6 release checklist](release-checklist.md) and [migration reconciliation](migration-reconciliation.md) supersede older pending-migration, missing-source/CSV, bundle-size and hosted-check statements below. The source and 142 published records now exist; no production changes were made in Phase 6. The live permission gap, cleanup schedule and hosted Auth/recovery gates remain open.
+
+## Tag appearance follow-up, 23 October 2026
+
+Tags now use text-sized rectangular backgrounds instead of stretching across their grid cells. Theme-aware peach, lilac, sage, blue, gold and rose accents distinguish groups, technologies, keywords and remaining-tag counts. Neutral unclassified tags are preserved. Full detail tags wrap; compact cards retain their consistent geometry. All 12 accent text/background pairs exceed 6.6:1 contrast. Four focused browser checks, lint, TypeScript and the production build passed; desktop/mobile screenshots were reviewed in both themes. The existing bundle-size warning remains. No data or filtering rules changed.
+
+## Source tags and margin follow-up, 23 October 2026
+
+Gerikah's latest request narrows the previously widened layout: shared content now has a 1328px maximum with 64/40/24/16px responsive side gutters. About copy is centered above the three supplied illustrations. Cards add source tag previews and automatic Hardware/Software grouping at the bottom; details expose all tags and matching evidence. Public filters combine keyword/index term, mentioned technology, grouping, academic years and search across the complete matching result set before pagination.
+
+The ignored 142-row CSV was analyzed locally; see [Source tags review](source-tags-review.md) for extraction rules, results, limitations and the later scope decision. No migration, live record changes, import or publication was performed. The existing published-only RPC and access policies remain intact. Derived filters are bounded to 2,000 matching records; larger catalogs require server-side facets. Automatic groups remain unverified and source references can affect a classification.
+
+Verification: all 34 browser tests passed, including desktop/mobile light and dark themes, keyboard/contrast checks, multi-page filters, private-draft exclusion, empty/error recovery and the existing authentication, management and import flows. The database/logic suite passed all 24 tests before the final currency rule; all four source-term tests passed afterward, including the added PHP currency and mobile-device regression. Lint, TypeScript, production build, environment leak check and diff whitespace check passed. A focused About capture additionally scrolls and checks all three lazy-loaded images. The existing production bundle-size warning remains. Live hosted filter latency was not measured; no Supabase connector was available in this session. Nothing was committed or pushed.
+
+## Public UI revision, 23 October 2026
+
+Expanded shared page width with 24px desktop/16px mobile gutters and reduced larger headings on the 8px scale while keeping readable 16px body text. Search cards now use consistent slots for title, first author (full name, with et al. for multiple authors), year, advisers and original abstract preview. The visible Search records heading and redundant card labels/actions are removed.
+
+Record details use the navigation wordmark, arrow/Back to results and Copy record link outside the panel. The outer page stays within the viewport. Results and overflowing thesis details scroll independently; gerikah confirmed overflow scrolling rather than pagination. Results/Thesis controls provide both panels on narrow screens. No stored names, abstracts, records, permissions or database functions changed.
+
+Regression coverage in `tests/public-reading.spec.ts` uses isolated published fixtures with long titles and abstracts to check equal card heights, full author preservation, complete abstract access, fixed-page geometry, independent panel scrolling, search context and both themes at 1440px, 768px and 390px. Existing public-navigation tests now open cards using their title link.
+
+Verification: all 31 browser tests passed. After final visual adjustments to metadata height and resetting detail scroll when opening another record, the focused public-reading test was rerun. Lint, TypeScript, production build and the environment leak check pass. The pre-existing bundle-size warning remains. No remote data was changed, and nothing was committed or pushed.
+
 ## Publish selected update, 23 October 2026
 
 Gerikah requested Select all → Publish. Publish selected now takes an explicit selection snapshot, loads the matching records across pages (respecting exclusions), reviews draft counts and current versions, and asks for confirmation. Already-published and archived records are skipped with an explanation. Missing publication fields block confirmation. Each confirmed draft uses the existing `set_record_status` RPC and its expected version, administrator checks, database publication rules and audit logging; no migration or new permission is needed.

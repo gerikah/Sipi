@@ -17,7 +17,7 @@ export function Icon({ name }: { name: 'search' | 'sun' | 'moon' | 'filter' | 'a
 }
 
 export function SourceNote() {
-  return <p>Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The supplied compendium subset covers academic years 2015–2016, 2018–2019, and 2019–2020. These are separate academic years, not continuous coverage. Records appear here after administrator review and publication.</p>
+  return <p>Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The supplied compendium subset covers academic years 2015-2020. These are separate academic years, not continuous coverage. Records appear here after administrator review and publication.</p>
 }
 
 export function ImageArea({ className = '', src, alt = '' }: { className?: string; src?: string; alt?: string }) {

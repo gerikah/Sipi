@@ -1,8 +1,10 @@
 # Compendium column review — 23 October 2026
 
+Phase 6 read-only verification found all 142 published records match the source IDs, titles, years, group codes, sections, abstracts and timestamps. Stored author order matches the retained reviewed import lists, which does not independently verify ambiguous name boundaries. See the [release checklist](release-checklist.md) for current findings and required review. No records were changed by that audit.
+
 Database follow-up: gerikah applied the content-scope migration manually. The earlier import installation was missing and has now been repaired in development; see [installation diagnosis and verification](import-installation-repair.md).
 
-This scope supersedes earlier topic/keyword interface requirements. Thesis content is limited to the 11 supplied columns. Source selection is provenance; UUIDs, status, versions, Sipi timestamps, import tracking and audits remain internal system fields.
+The later [source tags revision](source-tags-review.md) permits source-derived discovery tags and automatic Hardware/Software groups; these do not add CSV columns or change stored content. This scope otherwise supersedes earlier topic/keyword interface requirements. Thesis content is limited to the 11 supplied columns. Source selection is provenance; UUIDs, status, versions, Sipi timestamps, import tracking and audits remain internal system fields.
 
 ## Actual file inspected
 
@@ -43,7 +45,7 @@ Manual row review remains the default for all name lists. Administrators may cho
 
 - Forms retain the large existing layout, ordered people controls and source provenance. Topic/keyword controls and filters are removed. Student numbers have a private-handling explanation rather than an unverified assignment input.
 - Saves omit classification associations completely, preserving historical data. Import payloads already allow only the mapped source metadata; unsupported CSV headers are rejected. No topic extraction from abstract text is performed.
-- Public cards/details hide empty optional values, including Abstract. They display source content and selected source provenance, with no generated tags or institutional metadata presented as thesis fields.
+- Public cards/details hide empty optional values, including Abstract. They display source content and selected source provenance, with no generated thesis facts or institutional metadata presented as thesis fields. Derived discovery tags and automatic groups are now shown separately as described in the later source tags revision.
 - New migration `20261023090000_compendium_content_scope.sql` replaces public projections and public/admin search, and prevents unmapping `student_number` from bypassing server validation. The old `topic_id` RPC argument remains for compatibility but is ignored. Legacy classification tables, associations and administrative functions remain intact.
 - This migration is local and **not applied to the connected database**. Previous migrations are unchanged. Apply pending migrations in order through trusted administration after review.
 

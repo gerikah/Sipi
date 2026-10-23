@@ -1,5 +1,7 @@
 # Sipi database schema
 
+Current hosted status is in the [Phase 6 release checklist](release-checklist.md) and [migration reconciliation](migration-reconciliation.md). The project now serves the live site. A prepared additive repair closes direct actor-column read grants; it is not applied. Older development/migration-count statements below describe earlier phases.
+
 ## Scope and status
 
 This schema is based on the supplied `cpe_thesis_repository.csv` and the Sipi MVP development plan. It replaces the earlier assumption that the compendium contains a single completion year for each thesis.

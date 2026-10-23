@@ -14,6 +14,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     envPrefix: [],
+    build: { rolldownOptions: { output: { codeSplitting: { groups: [
+      { name: 'supabase', test: /node_modules[\\/]@supabase[\\/]/ },
+      { name: 'react', test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/ },
+    ] } } } },
     define: {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(url),
       'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(key),

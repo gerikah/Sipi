@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ImportDialog } from '../components/ImportDialog'
 import { PublishSelectedDialog } from '../components/PublishSelectedDialog'
 import { SearchToolbar } from '../components/SearchToolbar'
 import { RecordStatusDialog, statusLabel } from '../components/RecordStatusDialog'
@@ -8,6 +7,7 @@ import { explain, rpc, type Status, type Thesis } from '../lib/records'
 import { usePageTitle } from './PublicPages'
 
 const statuses = [['all', 'All'], ['draft', 'Drafts'], ['published', 'Published'], ['archived', 'Archived']] as const
+const ImportDialog = lazy(() => import('../components/ImportDialog').then(module => ({ default: module.ImportDialog })))
 type Result = { items: Thesis[]; total: number; page: number }
 type Selection = { scope: string; total: number; all: boolean; ids: Set<string> }
 export function RecordManagement() {
@@ -77,7 +77,7 @@ export function RecordManagement() {
       {error ? <div className="table-empty"><p className="error" role="alert">{error}</p></div> : !data ? <p className="table-empty" role="status">Loading records…</p> : !data.items.length && <div className="table-empty" role="status"><h2>{data.total ? 'No records on this page.' : 'No records yet.'}</h2><p>{data.total ? 'Go to the previous page or change the filters.' : 'No records match this view. Add a draft or change the filters.'}</p></div>}
     </section>
     <nav className="pagination" aria-label="Pagination"><button disabled={!data || page <= 1} onClick={() => changePage(page - 1)}>Previous</button><span>{data?.total ? `Page ${page} · ${data.total} records` : 'No pages to show'}</span><button disabled={!data || page * 24 >= data.total} onClick={() => changePage(page + 1)}>Next</button></nav>
-    {params.get("import") === "1" && <ImportDialog onClose={() => { const next = new URLSearchParams(params); next.delete("import"); setParams(next, { replace: true }) }} onComplete={() => { setResult(null); setRefresh(n => n + 1) }} />}
+    {params.get("import") === "1" && <Suspense fallback={<p role="status">Loading CSV import…</p>}><ImportDialog onClose={() => { const next = new URLSearchParams(params); next.delete("import"); setParams(next, { replace: true }) }} onComplete={() => { setResult(null); setRefresh(n => n + 1) }} /></Suspense>}
     {action && <RecordStatusDialog record={action.record} status={action.status} onClose={() => setAction(null)} onSuccess={() => { setMessage('Record status updated.'); setAction(null); setResult(null); setRefresh(n => n + 1) }} />}
     {publishSelection && <PublishSelectedDialog {...publishSelection} onClose={attempted => {
       setPublishSelection(null)

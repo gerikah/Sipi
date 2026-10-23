@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Dialog, Icon, Logo } from './Shared'
+import { TermFilters } from './TermFilters'
 
 export function SearchForm({ home = false, admin = false }: { home?: boolean; admin?: boolean }) {
   const [params] = useSearchParams()
@@ -20,7 +21,7 @@ export function SearchForm({ home = false, admin = false }: { home?: boolean; ad
   </form>
 }
 
-function Filters({ onClose }: { onClose: () => void }) {
+function Filters({ admin, onClose }: { admin: boolean; onClose: () => void }) {
   const [params, setParams] = useSearchParams()
   const [error, setError] = useState('')
   return <Dialog title="Filter records" onClose={onClose}><form className="stack" onSubmit={(e) => {
@@ -33,11 +34,17 @@ function Filters({ onClose }: { onClose: () => void }) {
     if (from && to && Number(from) > Number(to)) { setError('The start year must be before or equal to the end year.'); return }
     const next = new URLSearchParams(params)
     for (const [key, value] of [['year_from', from], ['year_to', to]]) { if (value) next.set(key, value); else next.delete(key) }
+    if (!admin) for (const key of ['keyword', 'technology', 'category']) {
+      const value = data.get(key)
+      if (value !== null) { if (value) next.set(key, String(value)); else next.delete(key) }
+    }
     next.delete('topic_id')
     next.delete('page'); setParams(next); onClose()
   }}>
     <p>Filter by the starting year of each academic year. Compendium coverage is separate.</p>
     <div className="field-pair"><label>From year<input name="year_from" inputMode="numeric" maxLength={4} placeholder="YYYY" defaultValue={params.get('year_from') ?? ''} /></label><label>To year<input name="year_to" inputMode="numeric" maxLength={4} placeholder="YYYY" defaultValue={params.get('year_to') ?? ''} /></label></div>
+
+    {!admin && <TermFilters params={params} />}
     {error && <p className="error" role="alert">{error}</p>}
     <div className="actions"><button type="submit" className="primary">Apply filters</button><button type="button" onClick={onClose}>Cancel</button></div>
   </form></Dialog>
@@ -46,14 +53,15 @@ function Filters({ onClose }: { onClose: () => void }) {
 export function SearchToolbar({ admin = false }: { admin?: boolean }) {
   const [params, setParams] = useSearchParams()
   const [filters, setFilters] = useState(false)
-  const active = params.has('year_from') || params.has('year_to')
+  const active = params.has('year_from') || params.has('year_to') || (!admin && ['keyword', 'technology', 'category'].some(key => params.has(key)))
   const sort = ['newest', 'oldest', 'title'].includes(params.get('sort') ?? '') ? params.get('sort')! : 'newest'
   return <><div className={`search-toolbar${admin ? ' admin-search' : ''}`}>
     {!admin && <Logo />}<SearchForm admin={admin} />
     <button className="filter-button" onClick={() => setFilters(true)}><Icon name="filter" />Filter{active ? ' · Applied' : ''}</button>
     <label className="sort-control"><span className="sr-only">Sort records</span><select aria-label="Sort records" value={sort} onChange={(e) => { const next = new URLSearchParams(params); next.set('sort', e.target.value); next.delete('page'); setParams(next) }}><option value="newest">Newest year</option><option value="oldest">Oldest year</option><option value="title">Title A to Z</option></select></label>
   </div>
-  {active && <div className="filter-summary"><span>Academic year: {params.get('year_from') || 'Any'} to {params.get('year_to') || 'Any'}</span><button onClick={() => { const next = new URLSearchParams(params); ['year_from', 'year_to', 'topic_id', 'page'].forEach((key) => next.delete(key)); setParams(next) }}>Clear filters</button></div>}
-  {filters && <Filters onClose={() => setFilters(false)} />}
+  {active && <div className="filter-summary">{(params.has('year_from') || params.has('year_to')) && <span>Academic year: {params.get('year_from') || 'Any'} to {params.get('year_to') || 'Any'}</span>}<button onClick={() => { const next = new URLSearchParams(params); ['year_from', 'year_to', 'topic_id', 'keyword', 'technology', 'category', 'page'].forEach((key) => next.delete(key)); setParams(next) }}>Clear filters</button></div>}
+  {!admin && ['keyword', 'technology', 'category'].some(key => params.has(key)) && <p className="field-note">{['keyword', 'technology', 'category'].filter(key => params.has(key)).map(key => `${key === 'category' ? 'Grouping' : key === 'keyword' ? 'Keyword/index term' : 'Technology'}: ${params.get(key)!.replace(/^(keyword|technology):/, '').replace(/^both$/, 'Hardware + Software')}`).join(' · ')}</p>}
+  {filters && <Filters admin={admin} onClose={() => setFilters(false)} />}
   </>
 }

@@ -47,7 +47,7 @@ Later scope: PDFs and downloads, student accounts and submissions, faculty/staff
 
 ## Current compendium content scope
 
-Gerikah's 23 October 2026 revision limits visible thesis content to the 11 verified CSV columns and labels in `docs/source-column-review.md`. Remove topic/keyword inputs, filters and public tags; preserve their stored tables and associations. Never extract tags or summaries from abstracts. Hide empty optional public details. Source selection is provenance, and system fields remain internal. The supplied CSV has now been inspected locally; author row 119 and some main adviser punctuation require manual boundary review.
+Gerikah's source content revision limits stored thesis content to the 11 verified CSV columns and labels in `docs/source-column-review.md`. A later explicit revision permits discovery tags from source keyword/index lists and named technology mentions, plus automatic Hardware/Software grouping with visible evidence. See `docs/source-tags-review.md`. Do not generate summaries, alter source text, or treat automatic groups as verified metadata. Keep topic/keyword form inputs removed and preserve existing classification tables and associations. Hide empty optional public details. Source selection is provenance, and system fields remain internal. Author row 119 and some main adviser punctuation require manual boundary review.
 
 ## Design and content requirements
 
@@ -167,5 +167,7 @@ For deployment changes, use `npm run build`, publish `dist` and configure the SP
 Report what changed, what was verified and any remaining dependency, such as the missing CSV. Keep phase progress and unresolved decisions documented in the repository's existing tracking system; do not invent completed work.
 
 ## Current implementation tracking
+
+Phase 6 read-only hosted findings and current release gates are tracked in `docs/release-checklist.md` and `docs/phase-6-review.md`. The connected project now backs the live site; the prepared access repair and retention schedule have not been applied. Use `docs/migration-reconciliation.md` before any migration push, and `docs/recovery.md` for backup/restore requirements. Earlier phase status statements are historical.
 
 See `docs/phase-4-5-review.md` for locally implemented public discovery and CSV importing, pending migrations and release gates. The ignored CSV is now present and its headers/values were inspected; see `docs/source-column-review.md` for the verified mapping, ambiguous name boundaries and pending additive migration. Importing never publishes records. Do not treat the feature implementation as authorization to import remote content.

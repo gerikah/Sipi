@@ -1,0 +1,31 @@
+import { test, expect } from '@playwright/test'
+import { mockAuth } from './auth-fixtures'
+
+test('page and panel transitions finish without blocking navigation, and reduced motion disables them', async ({ page }) => {
+  await mockAuth(page, false)
+  const record = { id: '00000000-0000-4000-8000-000000000001', title: 'Isolated motion fixture', abstract: 'Arduino sensors.\n\nKeywords: Monitoring.', authors: ['Isolated author'], advisers: [], panel_members: [], academicYear: '2000-2001', source_name: 'Isolated motion source', source_archive_id: '1', source_created_at: null, group_code: null, section_block: null }
+  await page.route('**/rest/v1/rpc/search_records', route => route.fulfill({ json: { total: 1, page: 1, items: [record] } }))
+  await page.route('**/rest/v1/rpc/public_record', route => route.fulfill({ json: record }))
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.setViewportSize({ width: 390, height: 900 })
+  await page.goto('/records')
+  await expect(page.locator('.result-card')).toHaveCount(1)
+  expect(await page.locator('.page').evaluate(el => getComputedStyle(el).animationName)).toBe('page-enter')
+  await page.locator('.result-card h2 a').click()
+  await expect(page.locator('.record-detail h1')).toHaveText(record.title)
+  await page.evaluate(async () => { await Promise.all(document.getAnimations().map(animation => animation.finished.catch(() => {}))) })
+  expect(await page.locator('.record-detail').evaluate(el => getComputedStyle(el).opacity)).toBe('1')
+  await page.getByRole('button', { name: 'Results', exact: true }).click()
+  await expect(page.locator('.supporting-results')).toBeVisible()
+  await page.getByRole('button', { name: 'Thesis', exact: true }).click()
+  await expect(page.locator('.record-detail')).toBeVisible()
+  await page.getByRole('button', { name: 'Switch to dark mode' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.getByRole('link', { name: 'Back to results', exact: true }).click()
+  await expect(page.locator('.result-card')).toHaveCount(1)
+  expect(await page.locator('.page').evaluate(el => getComputedStyle(el).animationName)).toBe('none')
+  expect(await page.locator('.result-card').evaluate(el => getComputedStyle(el).transitionDuration)).toBe('0s')
+  await page.keyboard.press('Tab')
+  await expect(page.locator(':focus')).toBeVisible()
+})

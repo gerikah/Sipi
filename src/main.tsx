@@ -6,10 +6,6 @@ import '@fontsource/quicksand/latin-700.css'
 import '@fontsource/nunito/latin-400.css'
 import '@fontsource/nunito/latin-600.css'
 import { Layout, RouteError } from './components/Layout'
-import { Home, SearchResults, ViewRecord, NotFound } from './pages/PublicPages'
-import { Login } from './pages/AdminPages'
-import { RecordManagement } from './pages/RecordManagement'
-import { RecordForm } from './pages/RecordForm'
 import { RequireAdmin } from './lib/auth'
 import './styles.css'
 
@@ -17,17 +13,23 @@ const router = createBrowserRouter([{
   element: <Layout />,
   errorElement: <RouteError />,
   children: [
-    { path: '/', element: <Home /> },
+    { path: '/', lazy: async () => ({ Component: (await import('./pages/PublicPages')).Home }) },
     { path: '/about', element: <Navigate to="/#about" replace /> },
-    { path: '/records', element: <SearchResults /> },
-    { path: '/records/:id', element: <ViewRecord /> },
-    { path: '/admin/login', element: <Login /> },
+    { path: '/records', lazy: async () => ({ Component: (await import('./pages/PublicPages')).SearchResults }) },
+    { path: '/records/:id', lazy: async () => ({ Component: (await import('./pages/PublicPages')).ViewRecord }) },
+    { path: '/admin/login', lazy: async () => ({ Component: (await import('./pages/AdminPages')).Login }) },
     { element: <RequireAdmin />, children: [
-      { path: '/admin/records', element: <RecordManagement /> },
-      { path: '/admin/records/new', element: <RecordForm key="new" /> },
-      { path: '/admin/records/:id/edit', element: <RecordForm key="edit" editing /> },
+      { path: '/admin/records', lazy: async () => ({ Component: (await import('./pages/RecordManagement')).RecordManagement }) },
+      { path: '/admin/records/new', lazy: async () => {
+        const { RecordForm } = await import('./pages/RecordForm')
+        return { Component: () => <RecordForm key="new" /> }
+      } },
+      { path: '/admin/records/:id/edit', lazy: async () => {
+        const { RecordForm } = await import('./pages/RecordForm')
+        return { Component: () => <RecordForm key="edit" editing /> }
+      } },
     ] },
-    { path: '*', element: <NotFound /> },
+    { path: '*', lazy: async () => ({ Component: (await import('./pages/PublicPages')).NotFound }) },
   ],
 }])
 
