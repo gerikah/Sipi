@@ -209,7 +209,7 @@ Use shared `PublicHeader`, `SearchToolbar`, `RecordCard`, `AdminHeader`, `Record
 
 ## Supporting states within these pages
 
-- Import CSV is a four step dialog: Upload CSV, Map columns, Review rows and Import summary. Do not create another top level page.
+- Import CSV is a six step dialog: Select CSV, Map columns, Validate rows, Review duplicates, Confirm rows and Import summary. Do not create another top level page.
 - Show row errors, duplicate warnings and selected row count before commit. Summary shows actual imported draft, skipped and invalid counts.
 - Classification dialogs allow selecting existing values and adding a controlled new value. Prevent accidental duplicate names.
 - Publishing and archiving show confirmation and specific error messages.

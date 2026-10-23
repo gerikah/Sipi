@@ -93,6 +93,18 @@ Before using the real compendium:
 
 ## Verification and release readiness
 
+### Import feedback and dismissal fix, 23 October 2026
+
+Reproduced locally with an isolated CSV: Close replaced the form subtree with confirmation content, unmounting the native file input. Keep reviewing recreated that input without its selected file. Parsed rows remained in React state, which made the reset especially confusing. Leave import also called navigation without allowing the already-confirmed dismissal through the route guard.
+
+The confirmation now opens as a separate modal over the still-mounted import form. Cancelling preserves the exact step, file, parsed rows, source, mapping, corrections, validation and row selections, and returns focus. The File is also retained independently in memory, so returning between workflow steps can display its correct filename even when a native chooser remounts. Explicit Leave import permits the confirmed navigation and releases local state on unmount. Close and Escape use the same guard; backdrop dismissal is not enabled. Pending reads and requests remain protected. No CSV or personal data is persisted to localStorage.
+
+Local reading, ready and invalid-file feedback is separate from server staging. Empty sources disable the selector and explain both the required trusted setup and the disabled next step. Reload sources preserves the selected CSV. Source loading is independent of recent-batch loading, so a failed batch-list request cannot hide valid source choices. Replacing a file clears its old parsed preview before validation, preventing a failed replacement from accidentally retaining an importable old file.
+
+Source configuration is still required through trusted Supabase administration using verified details. This fix creates no sources, changes no migrations and imports no real records. The reported real CSV was not used for these checks.
+
+Fix verification: the regression first failed because the chooser's selected File became undefined after Keep reviewing. After the fix, `npm test -- tests/import-feedback.spec.ts tests/discovery-import.spec.ts` passed all 9 tests. Coverage includes retained file/rows, mapping and corrections, focus after Close/Escape cancellation, explicit discard, missing-source guidance, malformed replacement, reading-time dismissal protection, source reload independent of batch-list failure, staged-batch reopening and recovery after a lost commit response. Light/dark screenshots were inspected at 1440px and 390px, including the scrolled next-step explanation; axe accessibility checks passed. `npm run lint` and `npm run build` (including type checking) passed. The existing bundle-size warning remains (about 597 KB). Database migrations were unchanged; the separate database suite was not rerun for this interface fix.
+
 Local checks cover CSV parsing and bounds, database grants/RLS, public versus unpublished visibility, actor-ID privacy, batch ownership/revocation, ordered names, source provenance, duplicate decisions, stale evidence, forced rollback, idempotent retry, retention and a 200-row batch. Browser integration routes loopback requests into disposable PostgreSQL with test-only Auth claims; it exercises actual SQL, not a hosted PostgREST server. Browser checks cover public search/context/direct links, import correction/back navigation, duplicate acknowledgement, invalid-row exclusion, lost commit responses, recent batches and both themes at desktop/mobile widths.
 
 Verification on 23 October 2026:

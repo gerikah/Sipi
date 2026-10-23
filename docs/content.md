@@ -159,6 +159,12 @@ Preserve the full width title, paired metadata rows, large abstract field and sm
 
 Use a wide dialog with six steps: Select CSV, Map columns, Validate rows, Review duplicates, Confirm rows and Import summary. Keep it in the existing workspace and preserve progress when validation fails. Warn before closing an uncommitted import.
 
+Keep the import form mounted while showing the leave confirmation. Keep reviewing (or Escape in the confirmation) cancels dismissal and returns focus without changing the selected file, step, mappings, corrections or errors. Leave import discards unfinished local work; saved staging remains recoverable from Recent imports. Close and Escape cannot dismiss while a read or request is pending. Backdrop clicks do not dismiss these dialogs.
+
+File feedback distinguishes “Reading CSV…”, “CSV ready: [filename] · [row count] rows”, and “File validation failed: [reason]”. Replace the brackets with actual local values. Explain that the file is only selected and read locally until staging succeeds. Retain the actual File in memory independently of the native chooser; do not put CSV data in localStorage.
+
+If sources loaded successfully but none exist, disable the selector and show: “No compendium source is configured. A source must be added before you can continue.” Explain that the project owner or database administrator must add the verified source in Supabase, then use Reload sources. Display “Source required before continuing” immediately below the disabled Map columns button. Source loading failures have separate retry feedback and do not erase the selected file.
+
 The implemented limits are 2 MiB and 200 rows per batch; local measurements reduced the earlier proposed 500-row limit. Measure hosted performance and the real file before importing. Accept UTF 8 CSV and define quoting and multiple author delimiters after reviewing the supplied compendium. Split larger files for the MVP. Do not assume column names or invent missing rows.
 
 Upload step: Choose CSV, Source compendium, [start year] and [end year]. Coverage years may remain unset; publishing a coverage claim requires verification. Map step: match source columns to title, year, authors and optional metadata. Preserve original row references and author order.
