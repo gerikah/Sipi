@@ -8,7 +8,7 @@ This schema is based on the supplied `cpe_thesis_repository.csv` and the Sipi MV
 
 Before using it in a repository where Phase 2 migrations already exist, compare names and relationships and write an incremental migration. Do not run it over existing tables or drop existing data. Apply once through a development migration before production.
 
-Direct application table writes remain disabled. The second migration implements save/status RPCs; record forms are connected in Phase 3, while import remains for Phase 5. The authorized development database now has the four repository migrations; see `phase-3-review.md`. The baseline and additive RPC migration are now verified in disposable PGlite PostgreSQL tests; full Supabase Auth/PostgREST checks remain pending. See [Phase 2 setup](phase-2-setup.md).
+Direct application table writes remain disabled. The second migration implements save/status RPCs; record forms are connected in Phase 3, and Phase 5 now adds local import staging/review/commit functions. The authorized development database now has the four repository migrations; see `phase-3-review.md`. The baseline and additive RPC migration are now verified in disposable PGlite PostgreSQL tests; full Supabase Auth/PostgREST checks remain pending. See [Phase 2 setup](phase-2-setup.md).
 
 ## What the CSV actually contains
 
@@ -94,7 +94,7 @@ Restore archived records to draft before publishing again. Archive rather than e
 
 ### Search
 
-The schema includes a PostgreSQL full-text index over title and abstract using the simple dictionary, plus year/status and relationship indexes. This is a foundation, not an implemented search API. Search by authors, advisers and keywords must join the related tables. Combine filters before counting and pagination; count distinct theses and use a stable ID tie-breaker.
+The schema includes a PostgreSQL full-text index over title and abstract using the simple dictionary, plus year/status and relationship indexes. The fifth migration implements a published-only search API; see phase-4-5-review.md for its contract. Search by authors, advisers and keywords must join the related tables. Combine filters before counting and pagination; count distinct theses and use a stable ID tie-breaker.
 
 The interface should now say Academic year and display the complete range. Do not relabel batch year as completion year. Sort by academic-year end/start plus ID. A future actual completion date must be stored separately and only when supplied.
 
@@ -110,7 +110,7 @@ Do not put a service role key in Netlify frontend variables. Public project URL 
 
 ## Implemented and remaining database functions
 
-Functions 1 and 2 are implemented in the second migration. The third migration adds protected administrator reads and classification saves. Public search and import belong to later phases. See the RPC contract in `phase-2-setup.md` before enabling management buttons:
+Functions 1 and 2 are implemented in the second migration. The third migration adds protected administrator reads and classification saves. The fifth and sixth local migrations implement public discovery and transactional importing; they are not yet applied remotely. See the RPC contract in `phase-2-setup.md` before enabling management buttons:
 
 1. `save_record(payload, expected_version)`: authenticate an active administrator; validate and lock; save metadata and all associations; touch parent version; write a trusted audit event in one transaction.
 2. `set_record_status(id, status, expected_version)`: check caller, allowed transition, publication requirements and version; set publication timestamp when publishing; write audit history.
@@ -140,3 +140,8 @@ Use explicit parameters, a fixed search path, qualified object names, limited EX
 - PostgreSQL constraints: https://www.postgresql.org/docs/current/ddl-constraints.html
 
 Phase 3 browser-facing administrator reads represent bigint archive IDs and repository codes as decimal strings. The public save wrapper accepts archive decimal strings and converts them in SQL before the private transaction, preserving all bigint precision.
+
+
+## Discovery/import implementation
+
+See [Phase 4 and 5 review](phase-4-5-review.md) for the proposed column mapping (actual CSV absent), six-step import, 2 MiB/200-row limits, private staging/retention, duplicate rules and idempotent atomic commit. Browser SELECT grants now exclude thesis actor IDs; administrator reads use explicit projections. New migrations do not seed sources, years or records. Sources still require trusted configuration.

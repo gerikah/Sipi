@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { EmptyState, ImageArea, Logo, Pagination, SourceNote } from '../components/Shared'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { EmptyState, ImageArea, Logo, SourceNote } from '../components/Shared'
 import { SearchForm, SearchToolbar } from '../components/SearchToolbar'
+import { usePublicQuery, usePublicSearch, type PublicRecord, type SearchResult } from '../lib/discovery'
 
 export function usePageTitle(title: string) {
   useEffect(() => { document.title = `${title} · Sipi` }, [title])
@@ -25,34 +26,51 @@ function AboutSection() {
   </section>
 }
 
-// The collection is intentionally empty. No fixtures are bundled into the app.
-export type PublicRecord = { id: string; title: string; authors: string[]; academicYear: string; abstract: string | null; topics: string[]; keywords: string[] }
-const records: PublicRecord[] = []
 
 export function RecordCard({ record }: { record: PublicRecord }) {
   const { search } = useLocation()
-  return <article className="record-card"><h2><Link to={`/records/${encodeURIComponent(record.id)}${search}`}>{record.title}</Link></h2>
+  return <article className="record-card"><h2><Link to={`/records/${record.id}${search}`}>{record.title}</Link></h2>
     <div className="record-metadata"><p>{record.authors.join(', ')}</p><p>{record.academicYear}</p></div>
-    <h3>Abstract</h3><p>{record.abstract || 'No abstract available.'}</p>
-    {!!(record.topics.length + record.keywords.length) && <ul className="chips">{[...record.topics, ...record.keywords].map((tag, i) => <li key={`${tag}-${i}`}>{tag}</li>)}</ul>}
-    <Link to={`/records/${encodeURIComponent(record.id)}${search}`}>View record</Link>
+    <h3>Abstract</h3><p className="abstract-preview">{record.abstract || 'No abstract available.'}</p>
+    {!!(record.topics.length + record.keywords.length) && <ul className="chips">{[...record.topics, ...record.keywords].map((tag, i) => <li key={i}>{tag}</li>)}</ul>}
+    <Link to={`/records/${record.id}${search}`}>View record</Link>
   </article>
 }
-
+function ResultPagination({ data }: { data?: SearchResult }) {
+  const [params, setParams] = useSearchParams()
+  function go(page: number) { const next = new URLSearchParams(params); next.set('page', String(page)); setParams(next) }
+  return <nav className="pagination" aria-label="Pagination"><button disabled={!data || data.page <= 1} onClick={() => go(data!.page - 1)}>Previous</button><span>{data?.total ? `Page ${data.page} · ${data.total} records` : 'No pages to show'}</span><button disabled={!data || data.page * 24 >= data.total} onClick={() => go(data!.page + 1)}>Next</button></nav>
+}
+function QueryError({ retry }: { retry: () => void }) { return <div className="notice"><p role="alert">We could not load the records. Try again.</p><button onClick={retry}>Try again</button></div> }
 export function SearchResults() {
   usePageTitle('Search records')
+  const { data, error, retry } = usePublicSearch()
+  const { search } = useLocation()
   return <section className="page"><SearchToolbar /><h1>Search records</h1>
-    <div className="record-grid">{records.length ? records.map((record) => <RecordCard key={record.id} record={record} />) : <EmptyState title="No thesis records are available yet."><p>Published thesis records will appear here when they are available.</p></EmptyState>}</div>
-    <Pagination />
+    {error ? <QueryError retry={retry} /> : !data ? <p role="status">Loading records…</p> : <div className="record-grid">{data.items.length ? data.items.map(record => <RecordCard key={record.id} record={record} />) : <EmptyState title={search ? 'No matching records found.' : 'No thesis records are available yet.'}><p>{search ? 'Try another search or change the filters.' : 'Published thesis records will appear here when they are available.'}</p></EmptyState>}</div>}
+    <ResultPagination data={data} />
   </section>
 }
-
 export function ViewRecord() {
-  usePageTitle('Record not found')
+  const { id } = useParams()
   const { search } = useLocation()
+  const validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '')
+  const { data: record, error, retry } = usePublicQuery<PublicRecord | null>('public_record', { record_id: validId ? id : null })
+  const results = usePublicSearch()
+  const [copied, setCopied] = useState('')
+  const shareUrl = new URL(`/records/${id}`, location.origin).href
+  usePageTitle(record?.title || (record === null ? 'Record not found' : 'Thesis record'))
   return <section className="page"><SearchToolbar /><Link className="back-link" to={`/records${search}`}>{search ? 'Back to results' : 'Back to all records'}</Link>
-    <div className="record-split"><aside className="supporting-results"><h2>Search results</h2><p>No thesis records are available yet.</p></aside>
-      <section className="record-detail"><h1>Record not found.</h1><p>This record is not available in the public repository.</p><Link className="button" to={`/records${search}`}>Search records</Link></section>
+    <div className="record-split"><aside className="supporting-results" aria-label="Current search results" tabIndex={0}><h2>Search results</h2>{results.error ? <QueryError retry={results.retry} /> : !results.data ? <p role="status">Loading results…</p> : results.data.items.length ? results.data.items.map(item => <article className={`record-card${item.id === id ? " selected-record" : ""}`} key={item.id}><h3><Link aria-current={item.id === id ? 'page' : undefined} to={`/records/${item.id}${search}`}>{item.title}</Link></h3><p>{item.authors.join(', ')}</p><p>{item.academicYear}</p></article>) : <p>No matching records found.</p>}</aside>
+      <section className="record-detail">{error ? <QueryError retry={retry} /> : record === undefined ? <p role="status">Loading record…</p> : !record ? <><h1>Record not found.</h1><p>This record is not available in the public repository.</p><Link className="button" to={`/records${search}`}>Search records</Link></> : <>
+        <h1>{record.title}</h1><button onClick={async () => { try { await navigator.clipboard.writeText(shareUrl); setCopied('Link copied.') } catch { setCopied('Copy the link from the field below.') } }}>Copy record link</button>{copied && <p role="status">{copied}</p>}{copied.startsWith('Copy') && <label>Record link<input readOnly value={shareUrl} onFocus={e => e.target.select()} /></label>}
+        <div className="record-body">
+          <section className="detail-abstract stack"><h2>Abstract</h2><p className="abstract-text">{record.abstract || 'No abstract available.'}</p>{!!(record.topics.length + record.keywords.length) && <ul className="chips">{[...record.topics,...record.keywords].map((tag,i) => <li key={i}>{tag}</li>)}</ul>}</section>
+          <aside className="detail-metadata"><h2>Record details</h2><dl className="public-details"><dt>Authors</dt><dd>{record.authors.join(', ')}</dd><dt>Academic year</dt><dd>{record.academicYear}</dd>{record.advisers.length > 0 && <><dt>Advisers</dt><dd>{record.advisers.join(', ')}</dd></>}<dt>Repository code</dt><dd>{record.repository_code}</dd>{record.group_code && <><dt>Group code</dt><dd>{record.group_code}</dd></>}{record.section_block && <><dt>Section block</dt><dd>{record.section_block}</dd></>}{record.panel_members.length > 0 && <><dt>Panel members</dt><dd>{record.panel_members.join(', ')}</dd></>}</dl></aside>
+          <section className="source-panel stack"><h2>Source</h2><p>{record.source_name}</p>{record.source_row_number && <p>Source data row: {record.source_row_number}</p>}{record.source_archive_id && <p>Original archive ID: {record.source_archive_id}</p>}{record.source_created_at && <p>Source timestamp: {record.source_created_at.replace('T', ' ')} (timezone not specified)</p>}</section>
+          <aside className="detail-institution stack"><h2>Department</h2><p>{record.department}</p><p>{record.campus}</p></aside>
+        </div>
+      </>}</section>
     </div>
   </section>
 }

@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Public pages work without a backend and contain no thesis records. Administrator routes now require a verified Supabase session and active database membership. Administrator record management now loads and saves real records through secured RPCs. CSV import remains disabled. Unsaved edits are guarded and failed saves preserve input.
+On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Public discovery now reads published records through Supabase; without a configured and migrated database it shows a query error with retry. Administrator routes now require a verified Supabase session and active database membership. Administrator record management now loads and saves real records through secured RPCs. CSV importing is available in the administrator workspace after the two pending migrations are applied. Unsaved edits are guarded and failed saves preserve input.
 
 For login setup, migrations, required dashboard settings and first-administrator provisioning, read [Phase 2 setup](docs/phase-2-setup.md). Copy `.env.example` to `.env.local` only if no environment file exists. Supply only the project URL and publishable key. The actual environment is ignored by Git. Never put secret/service-role keys or database passwords in frontend configuration.
 
@@ -48,7 +48,7 @@ Public navigation shows Home, About and Records. Login is accessed directly. The
 - `AGENTS.md`: scope, architecture and development rules.
 - `docs/design.md`, `docs/content.md`: visual and content specifications.
 - `docs/database_schema.md`: supplied compendium mapping and schema rationale.
-- `docs/phase-1-review.md`, `docs/phase-2-setup.md`, `docs/phase-3-review.md`: progress, verification and remaining gates.
+- `docs/phase-1-review.md`, `docs/phase-2-setup.md`, `docs/phase-3-review.md`, `docs/phase-4-5-review.md`: progress, verification and remaining gates.
 - `docs/references/`: seven supplied wireframes; `public/images/`: supplied assets.
 - `src/components/`, `src/pages/`, `src/styles.css`: shared UI, layouts and design tokens.
 - `src/lib/`: Supabase configuration and administrator access/session handling.
@@ -64,4 +64,4 @@ No frontend site was deployed. gerikah authorized the connected development data
 
 Phase 1 layouts and Phase 2 administrator access are in place. Phase 3 record management is implemented, verified locally and configured in the authorized development database. See [Phase 3 review](docs/phase-3-review.md) for migration history, checks, source setup and remaining full-stack acceptance limits.
 
-The supplied mapping identifies academic years 2015-2016, 2018-2019 and 2019-2020; this is not continuous or full-compendium coverage. No source, academic-year or thesis rows are seeded. The separate development-plan document and CSV file are not present in this checkout. Phase 3 connects record management; Phase 4 will connect public discovery, and Phase 5 implements reviewed CSV import. PDFs, analytics and student accounts remain outside the MVP.
+The supplied mapping identifies academic years 2015-2016, 2018-2019 and 2019-2020; this is not continuous or full-compendium coverage. No source, academic-year or thesis rows are seeded. The separate development-plan document and CSV file are not present in this checkout. Phases 4 and 5 now implement public discovery and reviewed CSV import locally. The new migrations are not applied remotely, and actual CSV mapping, source setup, cleanup scheduling and hosted acceptance remain pending. See [discovery and import instructions](docs/phase-4-5-review.md). PDFs, analytics and student accounts remain outside the MVP.

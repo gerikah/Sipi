@@ -1,5 +1,7 @@
 # Phase 3 record management
 
+Historical Phase 3 report. Current public discovery and import work is documented in [Phase 4 and 5 review](phase-4-5-review.md); its two new migrations are pending hosted deployment.
+
 ## Delivered
 
 The administrator table now loads real accessible records through `admin_records`. All, Drafts, Published and Archived views support search, academic-year start ranges, topic filtering, stable sorting, exact filtered totals and 24-record pages. Search matches title, abstract, repository code, group code, authors, advisers and keywords. Missing academic years sort last. Query parameters survive opening an edit form and returning to the table. Loading, empty, query failure and reload states are included.

@@ -142,7 +142,7 @@ test('mobile navigation, login visibility and approved workspace status selectio
   await expect(page.getByRole('button', { name: 'Archived', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await page.reload()
   await expect(page.getByRole('button', { name: 'Archived', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.getByRole('button', { name: 'Import CSV' })).toBeDisabled()
+  await expect(page.getByRole('link', { name: 'Import CSV', exact: true })).toHaveAttribute('href', '/admin/records?import=1')
   const emptyMessage = await page.locator('.table-empty').boundingBox()
   expect(emptyMessage!.x).toBeGreaterThanOrEqual(0)
   expect(emptyMessage!.x + emptyMessage!.width).toBeLessThanOrEqual(390)

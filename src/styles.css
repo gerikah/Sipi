@@ -271,3 +271,21 @@ dialog::backdrop { background: rgb(22 20 21 / 65%); }
   .public-nav a { transition: none; }
   button:active:not(:disabled), .button:active { transform: none; }
 }
+.abstract-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.abstract-preview { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.record-body { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; width: 100%; }
+.detail-metadata, .detail-institution { background: var(--surface-muted); border-radius: 16px; padding: 24px; overflow-wrap: anywhere; }
+.detail-metadata h2, .detail-institution h2 { font-size: 24px; line-height: 32px; }
+.public-details { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 24px; }
+.public-details dd { margin-bottom: 16px; }
+.supporting-results { max-height: 960px; overflow: auto; }
+.selected-record { outline: 2px solid var(--text); outline-offset: -2px; }
+.public-details dd { margin: 0; overflow-wrap: anywhere; }
+.record-detail h1, .record-card h2, .supporting-results h3 { overflow-wrap: anywhere; }
+.import-workflow { width: min(960px, 100%); }
+dialog:has(.import-workflow) { width: min(1024px, calc(100% - 32px)); }
+.import-row { padding: 16px; border: 1px solid var(--border); border-radius: 8px; overflow-wrap: anywhere; }
+.import-row summary { cursor: pointer; min-height: 48px; }
+.import-row textarea { width: 100%; }
+.import-row ul { padding-left: 24px; }
+@media (max-width: 640px) { .record-body { grid-template-columns: 1fr; } .supporting-results { max-height: 640px; } }

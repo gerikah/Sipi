@@ -1,0 +1,145 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link, useBlocker } from 'react-router-dom'
+import { Dialog } from './Shared'
+import { columns, mapRows, MAX_CSV_BYTES, parseCsv, proposedMapping, validateImport, type Csv, type Field, type ImportInput, type Mapping, type Payload, type Separator } from '../lib/csv'
+import { explain, loadOptions, rpc, type Choice } from '../lib/records'
+
+type Duplicate = { kind: string; reason: string; same_year: boolean; same_authors: boolean; row_number?: number; record_id?: string }
+type StagedRow = { row_number: number; payload: Payload | null; errors: string[]; duplicates: Duplicate[]; decision: string; reviewed: boolean; reason: string | null; thesis_id: string | null }
+type Batch = { id: string; filename: string; status: string; total: number; imported: number; skipped: number; invalid: number; failed: number; rows: StagedRow[] }
+type Recent = { id: string; filename: string; status: string }
+const steps = ['Select CSV', 'Map columns', 'Validate rows', 'Review duplicates', 'Confirm rows', 'Import summary']
+const nameFields = ['authors', 'advisers', 'panel_members'] as const
+export function ImportDialog({ onClose, onComplete }: { onClose: () => void; onComplete: () => void }) {
+  const [step, setStep] = useState(0); const [sources, setSources] = useState<Choice[]>([]); const [recent, setRecent] = useState<Recent[]>([])
+  const [source, setSource] = useState(''); const [filename, setFilename] = useState(''); const [hash, setHash] = useState(''); const [csv, setCsv] = useState<Csv | null>(null)
+  const [mapping, setMapping] = useState<Mapping | null>(null); const [separators, setSeparators] = useState<Record<typeof nameFields[number], Separator>>({ authors: 'review', advisers: 'review', panel_members: 'review' })
+  const [rows, setRows] = useState<ImportInput[]>([]); const [batch, setBatch] = useState<Batch | null>(null)
+  const [selected, setSelected] = useState<number[]>([]); const [acknowledged, setAcknowledged] = useState<number[]>([])
+  const [pending, setPending] = useState(false); const [error, setError] = useState(''); const [uncertain, setUncertain] = useState(false); const [closing, setClosing] = useState(false)
+  const lock = useRef(false); const mounted = useRef(true); const stageRequest = useRef({ key: '', id: '' }); const mappedKey = useRef('')
+  const dirty = !!(csv || batch) && batch?.status !== 'committed'
+  const allowClose = useRef(false)
+  const blocker = useBlocker(() => !allowClose.current && (dirty || pending))
+  const finishClose = () => { allowClose.current = true; onClose() }
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
+  useEffect(() => {
+    let active = true
+    Promise.all([loadOptions(), rpc<Recent[]>('list_imports')]).then(([options, imports]) => { if (active) { setSources(options.sources); setRecent(imports) } }).catch(() => { if (active) setError('Import sources or recent batches could not be loaded. Close and reopen to try again.') })
+    return () => { active = false }
+  }, [])
+  useEffect(() => {
+    if (!dirty && !pending) return
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', warn); return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty, pending])
+  async function run(task: () => Promise<void>) {
+    if (lock.current) return
+    lock.current = true; setPending(true); setError('')
+    try { await task() } catch (cause) {
+      if (mounted.current) {
+        const failure = cause as { code?: string; message?: string }
+        setError(failure.code === '40001' ? 'Records changed since this batch was reviewed. Reload the batch and review the new duplicate warnings.'
+          : failure.message && /^(Row \d+|Review duplicate|Select |No selected|Import limit|This import|Use a new batch)/.test(failure.message) ? failure.message
+          : cause instanceof Error && !('code' in cause) ? cause.message : explain(cause))
+      }
+    }
+    finally { lock.current = false; if (mounted.current) setPending(false) }
+  }
+  function adopt(value: Batch) {
+    setBatch(value); setUncertain(false)
+    setSelected(value.rows.filter(r => r.decision === 'import' || (r.decision === 'pending' && !r.errors.length && !r.duplicates.length)).map(r => r.row_number))
+    setAcknowledged(value.rows.filter(r => r.reviewed).map(r => r.row_number))
+    setStep(value.status === 'committed' ? 5 : 3)
+    if (value.status === 'committed') { setCsv(null); setRows([]); setMapping(null); setHash(''); stageRequest.current = { key: '', id: '' }; onComplete() }
+  }
+  async function stage() {
+    if (!csv || !mapping) return
+    const input = { source_id: source, filename, file_hash: hash, mapping: { columns: mapping, separators }, rows }
+    const key = JSON.stringify(input)
+    if (stageRequest.current.key !== key) stageRequest.current = { key, id: crypto.randomUUID() }
+    const value = await rpc<Batch>('stage_import', { batch_id: stageRequest.current.id, ...input })
+    if (mounted.current) adopt(value)
+  }
+  async function commit() {
+    if (!batch) return
+    try { const value = await rpc<Batch>('commit_import', { batch_id: batch.id }); if (mounted.current) adopt(value) }
+    catch (cause) { if (mounted.current) setUncertain(true); throw cause }
+  }
+  const close = () => { if (lock.current) return; if (dirty) setClosing(true); else finishClose() }
+  const toggle = (values: number[], n: number, checked: boolean) => checked ? [...values.filter(v => v !== n), n] : values.filter(v => v !== n)
+  const reviewRows = batch?.rows || []
+  return <Dialog title="Import CSV" onClose={close}>
+    {closing || blocker.state === 'blocked' ? <div className="stack"><h3>Leave this import?</h3><p>Unstaged changes will be lost. Staged batches can be reopened from Recent imports for 30 days.</p><button onClick={() => { setClosing(false); if (blocker.state === 'blocked') blocker.reset() }}>Keep reviewing</button><button disabled={pending} onClick={() => { if (blocker.state === 'blocked') blocker.proceed(); else onClose() }}>Leave import</button></div> : <div className="import-workflow stack" aria-busy={pending}>
+      <p>Step {step + 1} of {steps.length}: {steps[step]}</p>
+      {error && <p className="error" role="alert">{error}</p>}
+      {pending && <p role="status">Working…</p>}
+      {step === 0 && <>
+        <p>Choose a UTF-8 CSV up to 2 MB and 200 data rows. Imported records remain drafts.</p>
+        <label>Compendium source<select aria-label="Compendium source" disabled={pending} value={source} onChange={e => setSource(e.target.value)}><option value="">Choose an existing source</option>{sources.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+        {!sources.length && <p>No sources are available. Configure the verified compendium source through trusted administration first.</p>}
+        <label>CSV file<input type="file" accept=".csv,text/csv" disabled={pending} onChange={e => {
+          const file = e.target.files?.[0]; if (!file) return
+          void run(async () => {
+            if (file.size > MAX_CSV_BYTES) throw new Error('Choose a CSV of at most 2 MB.')
+            const bytes = await file.arrayBuffer(); const parsed = parseCsv(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+            const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(n => n.toString(16).padStart(2, '0')).join('')
+            if (!mounted.current) return
+            setCsv(parsed); setFilename(file.name); setHash(digest); setMapping(proposedMapping(parsed.headers)); setRows([]); setBatch(null); mappedKey.current = ''
+          })
+        }} /></label>
+        {csv && <p>{filename}: {csv.rows.length} data rows. The selected file stays in memory until staging.</p>}
+        <button disabled={pending || !csv || !source} onClick={() => setStep(1)}>Map columns</button>
+        {!!recent.length && <section><h3>Recent imports</h3><ul>{recent.map(item => <li key={item.id}><button disabled={pending} onClick={() => { void run(async () => { const value = await rpc<Batch>('get_import', { batch_id: item.id }); if (mounted.current) adopt(value) }) }}>{item.filename} — {item.status}</button></li>)}</ul></section>}
+      </>}
+      {step === 1 && csv && mapping && <>
+        <p>These suggested columns follow the documented mapping. The actual compendium file and name separators have not been verified in this checkout. Confirm each choice against your file.</p>
+        <div className="field-pair">{(Object.keys(columns) as Field[]).map(key => <label key={key}>{columns[key][0]}<select disabled={pending} value={mapping[key]} onChange={e => setMapping({ ...mapping, [key]: e.target.value })}><option value="">Not mapped</option>{csv.headers.map(h => <option key={h}>{h}</option>)}</select></label>)}</div>
+        {nameFields.map(key => <label key={key}>How are {columns[key][0].toLowerCase()} separated?<select value={separators[key]} onChange={e => setSeparators({ ...separators, [key]: e.target.value as Separator })}><option value="review">Enter reviewed names on each row</option><option value="single">One person per field (verified)</option><option value="comma">Commas (verified)</option><option value="semicolon">Semicolons (verified)</option><option value="newline">Line breaks (verified)</option></select></label>)}
+        <p>Choose a separator only after checking names and punctuation. Manual review starts with empty name lists. Student numbers are never added to public metadata.</p>
+        <div className="actions"><button onClick={() => setStep(0)}>Back</button><button disabled={!mapping.title || !mapping.academic_year || !mapping.authors} onClick={() => {
+          const key = JSON.stringify({ hash, mapping, separators }); if (mappedKey.current !== key) { setRows(mapRows(csv, mapping, separators)); mappedKey.current = key; setBatch(null) }
+          setStep(2)
+        }}>Validate and preview</button></div>
+        <p>Changing mapping choices rebuilds the preview. Returning without changing them preserves row corrections.</p>
+      </>}
+      {step === 2 && <>
+        <p>Check names in their original order. Enter one reviewed name per line. Invalid rows remain available to review but cannot be imported. Structural CSV errors require correcting the file.</p>
+        {rows.map((row, i) => <details className="import-row" key={i}><summary>Row {i + 1}: {row.payload.title || 'Missing title'} — {validateImport(row).length ? 'Needs correction or exclusion' : 'Ready for duplicate review'}</summary>
+          <div className="stack"><ul className="error">{validateImport(row).map((v, n) => <li key={n}>{v}</li>)}</ul>
+          {mapping && nameFields.map(key => row.raw[mapping[key]] && <p key={key}>Original {columns[key][0].toLowerCase()}: {row.raw[mapping[key]]}</p>)}
+          {(Object.keys(columns) as Field[]).filter(key => key !== 'student_number').map(key => <label key={key}>{columns[key][0]} — row {i + 1}<textarea aria-label={`${columns[key][0]} — row ${i + 1}`} rows={nameFields.includes(key as typeof nameFields[number]) ? 3 : 2} value={Array.isArray(row.payload[key]) ? (row.payload[key] as string[]).join('\n') : row.payload[key] || ''} onChange={e => {
+            const value = nameFields.includes(key as typeof nameFields[number]) ? (e.target.value ? e.target.value.split('\n') : []) : e.target.value || null
+            setRows(current => current.map((r, index) => index === i ? { ...r, payload: { ...r.payload, [key]: value } } : r)); setBatch(null)
+          }} /></label>)}</div>
+        </details>)}
+        <div className="actions"><button disabled={pending} onClick={() => setStep(1)}>Back</button><button disabled={pending} onClick={() => { void run(stage) }}>Check duplicates</button></div>
+      </>}
+      {step === 3 && batch && <>
+        <p>Select rows to import. Invalid rows and confirmed existing archive IDs cannot be selected. Review similar titles without assuming they are the same thesis.</p>
+        {reviewRows.map(row => {
+          const blocked = row.errors.length > 0 || row.duplicates.some(d => d.kind === 'existing_id') || batch.status === 'cancelled'
+          return <section className="import-row stack" key={row.row_number}><label className="checkbox-label"><input type="checkbox" disabled={pending || blocked} checked={selected.includes(row.row_number)} onChange={e => setSelected(toggle(selected, row.row_number, e.target.checked))} />Row {row.row_number}: {row.payload?.title || 'Unavailable row'}</label><p>{row.payload?.academic_year} · {row.payload?.authors.join(', ')}</p>
+            {!!row.errors.length && <ul className="error">{row.errors.map((v, i) => <li key={i}>{v}</li>)}</ul>}
+            {!!row.duplicates.length && <><ul>{row.duplicates.map((d, i) => <li key={i}>{d.reason} {d.same_year ? 'Same academic year.' : 'Academic year differs or is missing.'} {d.same_authors ? 'Author names match.' : 'Author names differ.'} {d.row_number && `Row ${d.row_number}.`}{d.record_id && <a href={`/admin/records/${d.record_id}/edit`} target="_blank" rel="noreferrer">Open existing record in a new tab</a>}</li>)}</ul>{!blocked && <label className="checkbox-label"><input type="checkbox" disabled={pending} checked={acknowledged.includes(row.row_number)} onChange={e => setAcknowledged(toggle(acknowledged, row.row_number, e.target.checked))} />I compared the warnings and want to import this row as a separate draft.</label>}</>}
+          </section>
+        })}
+        <p>{selected.length} selected; {reviewRows.length - selected.length} excluded.</p>
+        <div className="actions"><button disabled={pending} onClick={() => setStep(csv ? 2 : 0)}>Back</button><button disabled={pending || !selected.length || batch.status === 'cancelled'} onClick={() => { void run(async () => {
+          const value = await rpc<Batch>('review_import', { batch_id: batch.id, selected_rows: selected, acknowledged_rows: acknowledged }); if (mounted.current) { adopt(value); if (value.status !== 'committed') setStep(4) }
+        }) }}>Confirm selected rows</button><button disabled={pending} onClick={() => { void run(async () => { const value = await rpc<Batch>('get_import', { batch_id: batch.id }); if (mounted.current) adopt(value) }) }}>Reload batch</button></div>
+      </>}
+      {step === 4 && batch && <>
+        <p>Import {batch.rows.filter(r => r.decision === 'import').length} selected rows as drafts? All selected rows must succeed together. Publishing stays a separate action.</p>
+        <p>{batch.rows.filter(r => r.decision === 'skip').length} rows will be skipped.</p>
+        {uncertain && <p role="alert">The result could not be confirmed. Check the saved batch status before retrying. No new batch will be created.</p>}
+        <div className="actions"><button disabled={pending} onClick={() => setStep(3)}>Back to review</button>{uncertain ? <button disabled={pending} onClick={() => { void run(async () => { const value = await rpc<Batch>('get_import', { batch_id: batch.id }); if (mounted.current) adopt(value) }) }}>Check import status</button> : <button className="primary" disabled={pending} onClick={() => { void run(commit) }}>{pending ? 'Importing…' : 'Import drafts'}</button>}</div>
+      </>}
+      {step === 5 && batch && <>
+        <h3>Import complete</h3><p role="status">Imported drafts: {batch.imported}. Skipped rows: {batch.skipped}. Failed rows: {batch.failed}. Invalid rows among skipped: {batch.invalid}.</p>
+        <ul>{batch.rows.map(row => <li key={row.row_number}>Row {row.row_number}: {row.thesis_id ? <Link to={`/admin/records/${row.thesis_id}/edit`}>Edit imported draft</Link> : row.reason || 'Skipped.'}{!!row.errors.length && <p>{row.errors.join('; ')}</p>}</li>)}</ul>
+        <p>The original upload has been cleared from this browser. Staged personal data is retained privately for up to 30 days when scheduled cleanup is configured.</p><button onClick={onClose}>Close summary</button>
+      </>}
+    </div>}
+  </Dialog>
+}

@@ -49,14 +49,14 @@ export function AdminHeader() {
     <nav aria-label="Administrator navigation" className="admin-nav">
       <NavLink to="/admin/records" end>Records</NavLink>
       <NavLink to="/admin/records/new">Add record</NavLink>
-      <button disabled title="CSV import is not available yet">Import CSV</button>
+      <Link to="/admin/records?import=1">Import CSV</Link>
       <button onClick={() => setHelp(true)}>Help</button>
     </nav>
     <div className="header-actions"><ThemeToggle /><button onClick={() => setAccount(true)}>Account</button></div>
   </div>
   {help && <Dialog title="Help with Sipi" onClose={() => setHelp(false)}>
     <p>Use Add record to create a draft. Add authors and advisers in their original order. Save your changes before leaving the form.</p>
-    <p>Publishing requires a title, academic year, at least one author and a selected compendium source. Archive records to remove them from public searches; restore them to draft before editing. CSV import is not available yet.</p>
+    <p>Publishing requires a title, academic year, at least one author and a selected compendium source. Archive records to remove them from public searches; restore them to draft before editing. Use Import CSV to map columns, review names and duplicates, and import selected drafts.</p>
     <SourceNote /><Link to="/">Back to repository</Link>
   </Dialog>}
   {account && <Dialog title="Administrator account" onClose={() => setAccount(false)}><p>{access.email}</p><button onClick={() => { void logOut() }}>Log out</button></Dialog>}

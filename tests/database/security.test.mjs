@@ -79,7 +79,7 @@ test('migrations, role permissions, lifecycle and transaction integrity', async 
     const hidden=await save({title:'Unpublished fixture',authors:[{full_name:'Hidden author'}],advisers:[{display_name:'Hidden faculty'}]})
     for (const [role,user] of [['anon',null],['authenticated',ordinary],['authenticated',disabled]]) {
       assert.equal((await as(role,user,'select count(*)::int n from public.theses')).rows[0].n,1)
-      assert.equal((await as(role,user,'select * from public.theses where id=$1',[hidden.id])).rows.length,0)
+      assert.equal((await as(role,user,'select id from public.theses where id=$1',[hidden.id])).rows.length,0)
       assert.equal((await as(role,user,'select count(*)::int n from public.thesis_authors')).rows[0].n,2)
       assert.equal((await as(role,user,'select count(*)::int n from public.faculty_members')).rows[0].n,3)
       for(const table of ['academic_years','sources','topics','keywords','thesis_topics','thesis_keywords','thesis_panel_members']) assert.equal((await as(role,user,`select count(*)::int n from public.${table}`)).rows[0].n,1,table)
@@ -108,7 +108,7 @@ test('migrations, role permissions, lifecycle and transaction integrity', async 
   })
   await t.test('archive preserves relationships, requires restore, and revocation takes effect with the same claims', async () => {
     const archived=await status(published.id,'archived',published.version)
-    assert.equal((await as('anon',null,'select * from public.theses')).rows.length,0)
+    assert.equal((await as('anon',null,'select id from public.theses')).rows.length,0)
     await denied(()=>status(archived.id,'published',archived.version),'22023')
     await denied(()=>save({id:archived.id,title:'Archived edit'},archived.version),'22023')
     const restored=await status(archived.id,'draft',archived.version)
@@ -116,7 +116,7 @@ test('migrations, role permissions, lifecycle and transaction integrity', async 
     await db.query('update private.administrators set active=false where user_id=$1',[admin])
     await denied(()=>save({id:restored.id,title:'Revoked'},restored.version),'42501')
     await denied(()=>status(restored.id,'published',restored.version),'42501')
-    assert.equal((await as('authenticated',admin,'select * from public.theses')).rows.length,0)
+    assert.equal((await as('authenticated',admin,'select id from public.theses')).rows.length,0)
   })
   await t.test('management reads and classification writes reject unapproved/disabled users; catalog edits detect conflicts', async () => {
     await db.query('update private.administrators set active=true where user_id=$1',[admin])

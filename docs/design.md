@@ -10,7 +10,7 @@ The companion architecture document defines page copy, data rules and developmen
 
 Phase 2 source mapping supersedes the earlier pending-coverage wording. Use this note on Home and About:
 
-> Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the available compendium records for academic years 2015–2016, 2018–2019, and 2019–2020.
+> Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The supplied compendium subset covers academic years 2015–2016, 2018–2019, and 2019–2020. These are separate academic years, not continuous coverage. Records appear here after administrator review and publication.
 
 The available subset is not continuous coverage. Keep broader source coverage unset. Record placeholders describe empty fields and must never become stored values. No records are imported during Phase 2.
 
@@ -277,3 +277,6 @@ Loading skeletons temporarily match component shapes. They are not the permanent
 Use the complete `public/images/Logo Word.png` asset wherever the shared logo appears, preserving its proportions and inverting it for dark mode. Remove the separate logo at the beginning of About. Use the supplied filing-theses illustration beside the Home description and the other three research illustrations in About. Preserve their full composition with contain sizing and meaningful alternative text; do not label them as campus photographs. This revision supersedes earlier empty image areas and repeated About branding.
 
 Home spacing revision: public search labels and the sort label are visually hidden while retaining accessible names. The Home illustration area is at least 432px tall on wide screens and 320px on mobile. Space before About is 128px on wide screens and 80px on mobile.
+
+
+Current discovery/import behavior, limits, missing-file verification and deployment gates are documented in [Phase 4 and 5 review](phase-4-5-review.md).

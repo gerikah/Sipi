@@ -11,7 +11,7 @@ Use this file for interface copy and field placement. Follow [design.md](design.
 
 ## Required source note
 
-Sipi contains thesis records from the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila, based on the available compendium records for academic years 2015–2016, 2018–2019, and 2019–2020.
+Sipi is a thesis record repository for the Computer Engineering Department of PUP Main Campus, Sta. Mesa, Manila. The supplied compendium subset covers academic years 2015–2016, 2018–2019, and 2019–2020. These are separate academic years, not continuous coverage. Records appear here after administrator review and publication.
 
 Place this note on Home and About. These are separate verified academic years in the available subset, not continuous coverage. Broader compendium coverage stays unset. No records have been imported. Contact notes stay omitted until an approved contact is supplied.
 
@@ -157,9 +157,9 @@ Preserve the full width title, paired metadata rows, large abstract field and sm
 
 ### Import CSV within Record Management
 
-Use a wide dialog with four steps: Upload CSV, Map columns, Review rows and Import summary. Keep it in the existing workspace and preserve progress when validation fails. Warn before closing an uncommitted import.
+Use a wide dialog with six steps: Select CSV, Map columns, Validate rows, Review duplicates, Confirm rows and Import summary. Keep it in the existing workspace and preserve progress when validation fails. Warn before closing an uncommitted import.
 
-Start with proposed limits of 2 MB and 500 rows per batch, then confirm them against measured performance and the real file. Accept UTF 8 CSV and define quoting and multiple author delimiters after reviewing the supplied compendium. Split larger files for the MVP. Do not assume column names or invent missing rows.
+The implemented limits are 2 MiB and 200 rows per batch; local measurements reduced the earlier proposed 500-row limit. Measure hosted performance and the real file before importing. Accept UTF 8 CSV and define quoting and multiple author delimiters after reviewing the supplied compendium. Split larger files for the MVP. Do not assume column names or invent missing rows.
 
 Upload step: Choose CSV, Source compendium, [start year] and [end year]. Coverage years may remain unset; publishing a coverage claim requires verification. Map step: match source columns to title, year, authors and optional metadata. Preserve original row references and author order.
 
@@ -188,4 +188,7 @@ Login follow-up: show the supplied wordmark in the navigation bar on `/admin/log
 
 ## Phase 3 implementation notes
 
-Record management is connected to real administrator RPCs. Additional schema fields are Group code, Section block, ordered Panel members, Original archive ID, Source data row and Source timestamp without timezone. Academic years, topics and keywords can be managed explicitly; sources must be selected from existing verified entries. Draft, publish, archive and restore actions use saved versions and confirmation dialogs. Conflicts preserve input until the administrator confirms reloading. Student identifiers never enter the form. Bulk actions and public record View are deferred; Import CSV remains disabled.
+Record management is connected to real administrator RPCs. Additional schema fields are Group code, Section block, ordered Panel members, Original archive ID, Source data row and Source timestamp without timezone. Academic years, topics and keywords can be managed explicitly; sources must be selected from existing verified entries. Draft, publish, archive and restore actions use saved versions and confirmation dialogs. Conflicts preserve input until the administrator confirms reloading. Student identifiers never enter the form. Bulk actions remain deferred. Phase 4 now enables public record View and Phase 5 connects Import CSV; see phase-4-5-review.md.
+
+
+Current discovery/import behavior, limits, missing-file verification and deployment gates are documented in [Phase 4 and 5 review](phase-4-5-review.md).

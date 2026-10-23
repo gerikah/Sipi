@@ -104,7 +104,7 @@ Preserve query, filters, sort and page when opening a record or navigating Back.
 
 Use `docs/database_schema.md` for the supplied CSV mapping. Preserve ordered authors/advisers, group codes, section blocks, archive IDs and timestamps without guessing a timezone. Reinspect the actual CSV before Phase 5 splitting and import; missing values stay empty and student numbers remain private. Broader compendium coverage still requires independent verification.
 
-The import dialog has four steps: Upload CSV, Map columns, Review rows and Import summary. Proposed initial limits are 2 MB and 500 rows per batch, subject to measured performance. Parse UTF 8 CSV in the browser and stage normalized rows for database revalidation. Preserve original row references and author order.
+The import dialog has six steps: Select CSV, Map columns, Validate rows, Review duplicates, Confirm rows and Import summary. Implemented limits are 2 MiB and 200 rows per batch, reduced from the proposed 500 after local measurements; hosted performance remains to be checked. Parse UTF 8 CSV in the browser and stage normalized rows for database revalidation. Preserve original row references and author order.
 
 Invalid rows cannot be selected. Flag possible duplicates using normalized title, year and authors. Require correction or skipping; do not silently merge or overwrite. Enforce row validity again at commit, regardless of browser validation.
 
@@ -161,3 +161,7 @@ For database changes, verify direct API allow/deny behavior, related metadata vi
 For deployment changes, use `npm run build`, publish `dist` and configure the SPA rewrite to `index.html`. Verify direct detail and admin links after refresh. Use nonproduction Supabase data for previews and configure production Auth URLs separately. Do not mark backup recovery complete without a restore check.
 
 Report what changed, what was verified and any remaining dependency, such as the missing CSV. Keep phase progress and unresolved decisions documented in the repository's existing tracking system; do not invent completed work.
+
+## Current implementation tracking
+
+See `docs/phase-4-5-review.md` for locally implemented public discovery and CSV importing, pending migrations and release gates. The actual CSV is absent from this checkout and available attachments, so mapping and name separators still require verification against the real file. Importing never publishes records. Do not treat the feature implementation as authorization to import remote content.
